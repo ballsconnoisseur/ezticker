@@ -1,8 +1,16 @@
 import tkinter as tk
-import ez_res
 import threading
 import time
 import ez_update
+import json
+
+# Read the configuration file
+with open('config.json', 'r') as file:
+    config = json.load(file)
+
+symbols = config['symbols']
+interval = config['interval']
+
 
 def on_drag(event):
     if enable_drag:
@@ -15,28 +23,43 @@ def on_drag_start(event):
 
 def update_values():
     print("update_values started")
+    symbol_index = 0
     while True:
         try:
+            symbol = symbols[symbol_index]  # Get the current symbol
             formatted_data = ez_update.fetch_data(symbol)  # Fetch data from the separate module
             print("Formatted data:", formatted_data)
+
             if formatted_data:
                 last_price_color = "#00C186" if formatted_data['lastPriceUpDown'] == "up" else "#FF5761"
                 labels['symbol'].config(text=formatted_data['symbol'])
                 labels['lastPrice'].config(text=formatted_data['lastPrice'], fg=last_price_color)
-                labels['changePercent'].config(text=formatted_data['changePercent'])
+
+                change_percent = formatted_data['changePercent']
+                if change_percent.startswith("+"):
+                    change_percent_color = "#00C186"  # Green
+                elif change_percent.startswith("-"):
+                    change_percent_color = "#FF5761"  # Red
+                else:
+                    change_percent_color = "#0000FF"  # Blue
+                labels['changePercent'].config(text=change_percent, fg=change_percent_color)
                 labels['bestBid'].config(text=formatted_data['bestBid'])
                 labels['bestAsk'].config(text=formatted_data['bestAsk'])
                 labels['volume'].config(text=formatted_data['volume'])
                 labels['highPrice'].config(text=formatted_data['highPrice'])
                 labels['lowPrice'].config(text=formatted_data['lowPrice'])
                 labels['updatedAt'].config(text=formatted_data['updatedAt'])
+            
+            # Increment the symbol index, looping back to the start if necessary
+            symbol_index = (symbol_index + 1) % len(symbols)
+
         except Exception as e:
             print("Exception in update_values:", e)
         print("wait...")
-        time.sleep(30)
+        time.sleep(interval)
 
 
-def create_widget(x, y, symbol):
+def create_widget(x, y,):
     global widget_root
     widget_root = tk.Tk()
     widget_root.overrideredirect(True) # Remove title bar
@@ -108,6 +131,5 @@ def create_widget(x, y, symbol):
 
     return widget_root
 
-symbol = "BTC_USDT"
 enable_drag = False
 

@@ -1,14 +1,57 @@
 import tkinter as tk
 import ez_widget as widget_window
 import configparser
-
-symbol = "BTC_USDT"
+import json
 
 def minimize_gui():
     root.iconify()
 
 def toggle_drag():
     widget_window.enable_drag = var_drag.get() == 1
+
+# Function to read available symbols from a file
+def read_available_symbols(filename='ez_symbol_list.txt'):
+    with open(filename, 'r') as file:
+        return [line.strip() for line in file.readlines()]
+
+# Function to save symbols to config.json
+def save_symbols_to_config(symbols):
+    config_data = {"symbols": symbols, "interval": 7}
+    with open('config.json', 'w') as file:
+        json.dump(config_data, file)
+
+# Function to read symbols from config.json
+def read_symbols_from_config():
+    with open('config.json', 'r') as file:
+        return json.load(file)['symbols']
+
+# Function to open symbol configuration window
+def config_symbols():
+    config_window = tk.Toplevel(root)
+    config_window.title("Config Symbols")
+
+    available_symbols = read_available_symbols()
+    current_symbols = read_symbols_from_config()
+
+    symbol_vars = []
+    for i in range(9):
+        var_symbol = tk.StringVar(config_window)
+        var_symbol.set(current_symbols[i])  # Set the default value
+        option_menu = tk.OptionMenu(config_window, var_symbol, *available_symbols)
+        option_menu.grid(row=i, column=0)
+        entry_field = tk.Entry(config_window, textvariable=var_symbol)
+        entry_field.grid(row=i, column=1)
+        symbol_vars.append(var_symbol)
+
+    def save_config_symbols():
+        selected_symbols = [var.get() for var in symbol_vars]
+        save_symbols_to_config(selected_symbols)
+        close_widget()  # Close the widget
+        show_widget()   # Show the widget again with the new configuration
+        config_window.destroy()
+
+    button_save_config_symbols = tk.Button(config_window, text="Save", command=save_config_symbols)
+    button_save_config_symbols.grid(row=9, column=0, columnspan=2)
 
 def save_config():
     config['Position']['x'] = str(widget_window.widget_root.winfo_x())
@@ -21,7 +64,7 @@ def show_widget():
     if widget:
         widget.destroy()
     x, y = config.get('Position', 'x'), config.get('Position', 'y')
-    widget = widget_window.create_widget(x, y, symbol)
+    widget = widget_window.create_widget(x, y,)
     widget.mainloop()
 
 def close_widget():
@@ -59,6 +102,10 @@ root.protocol("WM_DELETE_WINDOW", minimize_gui) # Minimize instead of close
 var_drag = tk.IntVar()
 check_drag = tk.Checkbutton(root, text="Enable Drag", variable=var_drag, command=toggle_drag)
 check_drag.pack()
+# Config Symbols button
+button_config_symbols = tk.Button(root, text="Config Symbols", command=config_symbols)
+button_config_symbols.pack()
+# Buttons
 button_show = tk.Button(root, text="Show Widget", command=show_widget)
 button_show.pack()
 button_close = tk.Button(root, text="Close Widget", command=close_widget)
@@ -72,3 +119,4 @@ button_exit.pack()
 
 widget = None
 root.mainloop()
+

@@ -44,14 +44,3 @@ def format_market_data(symbol):
         return None
 
 
-symbol = "BTC_USDT"
-formatted_data = format_market_data(symbol)
-
-current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-
-if formatted_data:
-    # Process and display the formatted data
-    print(f"Current Time: {current_time}\n")
-    print(formatted_data)
-else:
-    print(f"Failed to format market data for symbol {symbol}")
