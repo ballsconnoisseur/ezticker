@@ -2,31 +2,38 @@ import tkinter as tk
 import ez_res
 import threading
 import time
+import ez_update
 
 def on_drag(event):
-    x = widget_root.winfo_x() + event.x - widget_root._drag_data["x"]
-    y = widget_root.winfo_y() + event.y - widget_root._drag_data["y"]
-    widget_root.geometry(f'+{x}+{y}')
+    if enable_drag:
+        x = widget_root.winfo_x() + event.x - widget_root._drag_data["x"]
+        y = widget_root.winfo_y() + event.y - widget_root._drag_data["y"]
+        widget_root.geometry(f'+{x}+{y}')
 
 def on_drag_start(event):
     widget_root._drag_data = {"x": event.x, "y": event.y}
 
 def update_values():
+    print("update_values started")
     while True:
-        formatted_data = ez_res.format_market_data(symbol)
-        if formatted_data:
-            last_price_color = "#00C186" if formatted_data['lastPriceUpDown'] == "up" else "#FF5761"
-            labels['symbol'].config(text=formatted_data['symbol'])
-            labels['lastPrice'].config(text=formatted_data['lastPrice'], fg=last_price_color)
-            labels['changePercent'].config(text=formatted_data['changePercent'])
-            labels['bestBid'].config(text=formatted_data['bestBid'])
-            labels['bestAsk'].config(text=formatted_data['bestAsk'])
-            labels['volume'].config(text=formatted_data['volume'])
-            labels['highPrice'].config(text=formatted_data['highPrice'])
-            labels['lowPrice'].config(text=formatted_data['lowPrice'])
-            labels['updatedAt'].config(text=formatted_data['updatedAt'])
+        try:
+            formatted_data = ez_update.fetch_data(symbol)  # Fetch data from the separate module
+            print("Formatted data:", formatted_data)
+            if formatted_data:
+                last_price_color = "#00C186" if formatted_data['lastPriceUpDown'] == "up" else "#FF5761"
+                labels['symbol'].config(text=formatted_data['symbol'])
+                labels['lastPrice'].config(text=formatted_data['lastPrice'], fg=last_price_color)
+                labels['changePercent'].config(text=formatted_data['changePercent'])
+                labels['bestBid'].config(text=formatted_data['bestBid'])
+                labels['bestAsk'].config(text=formatted_data['bestAsk'])
+                labels['volume'].config(text=formatted_data['volume'])
+                labels['highPrice'].config(text=formatted_data['highPrice'])
+                labels['lowPrice'].config(text=formatted_data['lowPrice'])
+                labels['updatedAt'].config(text=formatted_data['updatedAt'])
+        except Exception as e:
+            print("Exception in update_values:", e)
         print("wait...")
-        time.sleep(5)  # Wait for 1 minute
+        time.sleep(30)
 
 
 def create_widget(x, y, symbol):
@@ -73,31 +80,26 @@ def create_widget(x, y, symbol):
         'lowPrice': tk.Label(widget_root),
         'updatedAt': tk.Label(widget_root),
     }
-    # Get formatted market data
-    formatted_data = ez_res.format_market_data(symbol)
 
-    if formatted_data:
-        border_color = "#0c0c0c"
-        last_price_color = "#00C186" if formatted_data['lastPriceUpDown'] == "up" else "#FF5761"
-        for row, col, text, colspan in [
-            (0, 0, formatted_data['symbol'], 2),
-            (0, 2, formatted_data['lastPriceUpDown'], 1),
-            (0, 3, formatted_data['lastPrice'], 3),
-            (0, 6, formatted_data['changePercent'], 2),
-
-            (1, 0, formatted_data['bestBid'], 2),
-            (1, 2, formatted_data['bestAsk'], 2),
-            (1, 4, formatted_data['volume'], 4),
-
-            (2, 0, formatted_data['highPrice'], 2),
-            (2, 2, formatted_data['lowPrice'], 2),
-            (2, 4, formatted_data['updatedAt'], 4),
+        # Initialize labels with empty or placeholder values
+    for key, row, col, colspan in [
+            ('symbol', 0, 0, 2),
+            ('lastPriceUpDown', 0, 2, 1),
+            ('lastPrice', 0, 3, 3),
+            ('changePercent', 0, 6, 2),
+            ('bestBid', 1, 0, 2),
+            ('bestAsk', 1, 2, 2),
+            ('volume', 1, 4, 4),
+            ('highPrice', 2, 0, 2),
+            ('lowPrice', 2, 2, 2),
+            ('updatedAt', 2, 4, 4),
         ]:
-            label = tk.Label(widget_root, text=text, borderwidth=1, relief="solid")
+            label = tk.Label(widget_root, text="", borderwidth=1, relief="solid")
             label.grid(row=row, column=col, columnspan=colspan, sticky="nsew")
-            label.config(highlightthickness=1, highlightbackground=border_color)
-            if col == 3:  # If this is the lastPrice label
-                label.config(fg=last_price_color)  # Set the text color based on lastPriceUpDown
+            labels[key] = label  # Store the label in the labels dictionary
+            #label.config(highlightthickness=1, highlightbackground=border_color)
+            #if col == 3:  # If this is the lastPrice label
+            #    label.config(fg=last_price_color)  # Set the text color based on lastPriceUpDown
 
     # Create a thread to update the values
     update_thread = threading.Thread(target=update_values)
@@ -106,4 +108,6 @@ def create_widget(x, y, symbol):
 
     return widget_root
 
-symbol = "PAPRY_USDT"
+symbol = "BTC_USDT"
+enable_drag = False
+

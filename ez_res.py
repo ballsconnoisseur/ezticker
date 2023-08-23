@@ -44,7 +44,7 @@ def format_market_data(symbol):
         return None
 
 
-symbol = "PAPRY_USDT"
+symbol = "BTC_USDT"
 formatted_data = format_market_data(symbol)
 
 current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')

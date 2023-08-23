@@ -2,7 +2,7 @@ import tkinter as tk
 import ez_widget as widget_window
 import configparser
 
-symbol = "PAPRY_USDT"
+symbol = "BTC_USDT"
 
 def minimize_gui():
     root.iconify()
