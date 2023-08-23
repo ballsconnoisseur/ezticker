@@ -1,7 +1,11 @@
 import tkinter as tk
+from tkinter import ttk
 import ez_widget as widget_window
 import configparser
 import json
+
+# Global variable for the configuration window
+config_window = None
 
 def minimize_gui():
     root.iconify()
@@ -27,8 +31,14 @@ def read_symbols_from_config():
 
 # Function to open symbol configuration window
 def config_symbols():
+    global config_window
+    if config_window:
+        config_window.lift()  # Bring the existing window to the front
+        return
+
     config_window = tk.Toplevel(root)
     config_window.title("Config Symbols")
+    config_window.protocol("WM_DELETE_WINDOW", close_config_window) # Close instead of destroy
 
     available_symbols = read_available_symbols()
     current_symbols = read_symbols_from_config()
@@ -37,8 +47,11 @@ def config_symbols():
     for i in range(9):
         var_symbol = tk.StringVar(config_window)
         var_symbol.set(current_symbols[i])  # Set the default value
-        option_menu = tk.OptionMenu(config_window, var_symbol, *available_symbols)
-        option_menu.grid(row=i, column=0)
+
+        # Create a Combobox and set its values and height
+        combobox = ttk.Combobox(config_window, textvariable=var_symbol, values=available_symbols, height=11)
+        combobox.grid(row=i, column=0)
+
         entry_field = tk.Entry(config_window, textvariable=var_symbol)
         entry_field.grid(row=i, column=1)
         symbol_vars.append(var_symbol)
@@ -46,12 +59,18 @@ def config_symbols():
     def save_config_symbols():
         selected_symbols = [var.get() for var in symbol_vars]
         save_symbols_to_config(selected_symbols)
-        close_widget()  # Close the widget
         show_widget()   # Show the widget again with the new configuration
         config_window.destroy()
 
     button_save_config_symbols = tk.Button(config_window, text="Save", command=save_config_symbols)
     button_save_config_symbols.grid(row=9, column=0, columnspan=2)
+
+def close_config_window():
+    global config_window
+    if config_window:
+        config_window.destroy()
+        config_window = None
+
 
 def save_config():
     config['Position']['x'] = str(widget_window.widget_root.winfo_x())
@@ -62,18 +81,24 @@ def save_config():
 def show_widget():
     global widget
     if widget:
-        widget.destroy()
+        close_widget()
+        print("Closed, bc was open")
     x, y = config.get('Position', 'x'), config.get('Position', 'y')
     widget = widget_window.create_widget(x, y,)
     widget.mainloop()
+    print("Opened")
 
 def close_widget():
     global widget
     if widget:
         widget.destroy()
         widget = None
+        widget_window.stop_update_thread()  # Stop the update thread
+        print("Closed")
+
 
 def exit_gui():
+    close_config_window()
     close_widget()
     root.destroy()
 

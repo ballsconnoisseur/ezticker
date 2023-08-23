@@ -4,12 +4,17 @@ import time
 import ez_update
 import json
 
-# Read the configuration file
-with open('config.json', 'r') as file:
-    config = json.load(file)
+update_thread = None
+update_running = False
 
-symbols = config['symbols']
-interval = config['interval']
+
+# Function to load the configuration
+def load_config():
+    global symbols, interval
+    with open('config.json', 'r') as file:
+        config = json.load(file)
+    symbols = config['symbols']
+    interval = config['interval']
 
 
 def on_drag(event):
@@ -22,9 +27,11 @@ def on_drag_start(event):
     widget_root._drag_data = {"x": event.x, "y": event.y}
 
 def update_values():
+    global update_running
     print("update_values started")
     symbol_index = 0
-    while True:
+    while update_running:  # Check the update_running variable
+        load_config()  # Load the configuration
         try:
             symbol = symbols[symbol_index]  # Get the current symbol
             formatted_data = ez_update.fetch_data(symbol)  # Fetch data from the separate module
@@ -56,11 +63,22 @@ def update_values():
         except Exception as e:
             print("Exception in update_values:", e)
         print("wait...")
-        time.sleep(interval)
+        # Break the sleep into smaller intervals and check update_running
+        for _ in range(interval):
+            if not update_running:
+                break
+            time.sleep(1)
+            print("wait.")
 
+def stop_update_thread():
+    global update_thread, update_running
+    update_running = False
+    if update_thread:
+        update_thread.join()
+        update_thread = None
 
 def create_widget(x, y,):
-    global widget_root
+    global widget_root, update_thread, update_running
     widget_root = tk.Tk()
     widget_root.overrideredirect(True) # Remove title bar
 
@@ -88,6 +106,8 @@ def create_widget(x, y,):
         widget_root.grid_rowconfigure(i, weight=1)
     for i in range(5):
         widget_root.grid_columnconfigure(i, weight=1)
+
+    load_config()  # Load the configuration
 
     # Create labels for the data
     global labels
@@ -124,9 +144,10 @@ def create_widget(x, y,):
             #if col == 3:  # If this is the lastPrice label
             #    label.config(fg=last_price_color)  # Set the text color based on lastPriceUpDown
 
-    # Create a thread to update the values
+    # Create and start the update thread
+    update_running = True
     update_thread = threading.Thread(target=update_values)
-    update_thread.daemon = True  # Daemon thread will exit when the main program exits
+    update_thread.daemon = True
     update_thread.start()
 
     return widget_root
