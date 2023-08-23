@@ -123,6 +123,8 @@ if 'Position' not in config:
 
 # Gui elements
 root = tk.Tk()
+root.title("EZ Ticker")
+root.wm_attributes('-toolwindow', True)  # Create a tool window without minimize and maximize buttons
 root.protocol("WM_DELETE_WINDOW", minimize_gui) # Minimize instead of close
 var_drag = tk.IntVar()
 check_drag = tk.Checkbutton(root, text="Enable Drag", variable=var_drag, command=toggle_drag)
