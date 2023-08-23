@@ -6,7 +6,7 @@ import json
 
 update_thread = None
 update_running = False
-
+enable_drag = False
 
 # Function to load the configuration
 def load_config():
@@ -62,6 +62,7 @@ def update_values():
 
         except Exception as e:
             print("Exception in update_values:", e)
+
         print("wait...")
         # Break the sleep into smaller intervals and check update_running
         for _ in range(interval):
@@ -70,12 +71,6 @@ def update_values():
             time.sleep(1)
             print("wait.")
 
-def stop_update_thread():
-    global update_thread, update_running
-    update_running = False
-    if update_thread:
-        update_thread.join()
-        update_thread = None
 
 def create_widget(x, y,):
     global widget_root, update_thread, update_running
@@ -143,14 +138,22 @@ def create_widget(x, y,):
             #label.config(highlightthickness=1, highlightbackground=border_color)
             #if col == 3:  # If this is the lastPrice label
             #    label.config(fg=last_price_color)  # Set the text color based on lastPriceUpDown
-
+    print("Widget made")
     # Create and start the update thread
     update_running = True
     update_thread = threading.Thread(target=update_values)
     update_thread.daemon = True
     update_thread.start()
-
+    print("TH running")
     return widget_root
 
-enable_drag = False
 
+
+def stop_update_thread():
+    global update_thread, update_running
+    update_running = False
+    if update_thread:
+        update_thread.join()
+        update_thread = None
+        print("th stoping")
+    print("idk why is that")

@@ -5,7 +5,7 @@ import configparser
 import json
 
 # Global variable for the configuration window
-config_window = None
+config_window = False
 
 def minimize_gui():
     root.iconify()
@@ -57,19 +57,22 @@ def config_symbols():
         symbol_vars.append(var_symbol)
 
     def save_config_symbols():
+        global config_window  # Add this line
         selected_symbols = [var.get() for var in symbol_vars]
         save_symbols_to_config(selected_symbols)
+        close_widget()
         show_widget()   # Show the widget again with the new configuration
-        config_window.destroy()
+        print("Preset saved")
 
     button_save_config_symbols = tk.Button(config_window, text="Save", command=save_config_symbols)
     button_save_config_symbols.grid(row=9, column=0, columnspan=2)
 
 def close_config_window():
     global config_window
-    if config_window:
+    if config_window:  # Check if config_window is not False
         config_window.destroy()
-        config_window = None
+        config_window = False
+
 
 
 def save_config():
@@ -81,21 +84,25 @@ def save_config():
 def show_widget():
     global widget
     if widget:
+        # If the widget is already open, close it
         close_widget()
-        print("Closed, bc was open")
-    x, y = config.get('Position', 'x'), config.get('Position', 'y')
-    widget = widget_window.create_widget(x, y,)
-    widget.mainloop()
-    print("Opened")
+        print("Closed, because was open")
+        widget = None
+    else:
+        # If the widget is not open, create and show it
+        x, y = config.get('Position', 'x'), config.get('Position', 'y')
+        widget = widget_window.create_widget(x, y)
+        widget.mainloop()
+        print("Opened")
 
 def close_widget():
     global widget
     if widget:
+        widget_window.stop_update_thread()  # Stop the update thread
+        print("TH Killed")
         widget.destroy()
         widget = None
-        widget_window.stop_update_thread()  # Stop the update thread
         print("Closed")
-
 
 def exit_gui():
     close_config_window()
@@ -124,7 +131,6 @@ if 'Position' not in config:
 # Gui elements
 root = tk.Tk()
 root.title("EZ Ticker")
-root.wm_attributes('-toolwindow', True)  # Create a tool window without minimize and maximize buttons
 root.protocol("WM_DELETE_WINDOW", minimize_gui) # Minimize instead of close
 var_drag = tk.IntVar()
 check_drag = tk.Checkbutton(root, text="Enable Drag", variable=var_drag, command=toggle_drag)
