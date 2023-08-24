@@ -1,82 +1,18 @@
 import tkinter as tk
-import threading
-import time
-import ez_update
 import json
 
-update_thread = None
-update_running = False
 enable_drag = False
+always_on_top = False
+labels = {}
+def create_widget(x, y):
+    global widget_root, always_on_top
 
-# Function to load the configuration
-def load_config():
-    global symbols, interval
-    with open('config.json', 'r') as file:
-        config = json.load(file)
-    symbols = config['symbols']
-    interval = config['interval']
-
-
-def on_drag(event):
-    if enable_drag:
-        x = widget_root.winfo_x() + event.x - widget_root._drag_data["x"]
-        y = widget_root.winfo_y() + event.y - widget_root._drag_data["y"]
-        widget_root.geometry(f'+{x}+{y}')
-
-def on_drag_start(event):
-    widget_root._drag_data = {"x": event.x, "y": event.y}
-
-def update_values():
-    global update_running
-    print("update_values started")
-    symbol_index = 0
-    while update_running:  # Check the update_running variable
-        load_config()  # Load the configuration
-        try:
-            symbol = symbols[symbol_index]  # Get the current symbol
-            formatted_data = ez_update.fetch_data(symbol)  # Fetch data from the separate module
-            print("Formatted data:", formatted_data)
-
-            if formatted_data:
-                last_price_color = "#00C186" if formatted_data['lastPriceUpDown'] == "up" else "#FF5761"
-                labels['symbol'].config(text=formatted_data['symbol'])
-                labels['lastPrice'].config(text=formatted_data['lastPrice'], fg=last_price_color)
-
-                change_percent = formatted_data['changePercent']
-                if change_percent.startswith("+"):
-                    change_percent_color = "#00C186"  # Green
-                elif change_percent.startswith("-"):
-                    change_percent_color = "#FF5761"  # Red
-                else:
-                    change_percent_color = "#0000FF"  # Blue
-                labels['changePercent'].config(text=change_percent, fg=change_percent_color)
-                labels['bestBid'].config(text=formatted_data['bestBid'])
-                labels['bestAsk'].config(text=formatted_data['bestAsk'])
-                labels['volume'].config(text=formatted_data['volume'])
-                labels['highPrice'].config(text=formatted_data['highPrice'])
-                labels['lowPrice'].config(text=formatted_data['lowPrice'])
-                labels['updatedAt'].config(text=formatted_data['updatedAt'])
-            
-            # Increment the symbol index, looping back to the start if necessary
-            symbol_index = (symbol_index + 1) % len(symbols)
-
-        except Exception as e:
-            print("Exception in update_values:", e)
-
-        print("wait...")
-        # Break the sleep into smaller intervals and check update_running
-        for _ in range(interval):
-            if not update_running:
-                break
-            time.sleep(1)
-            print("wait.")
-
-
-def create_widget(x, y,):
-    global widget_root, update_thread, update_running
     widget_root = tk.Tk()
     widget_root.overrideredirect(True) # Remove title bar
 
+    # Set the widget to always be on top if the always_on_top variable is True
+    if always_on_top:
+        widget_root.wm_attributes("-topmost", 1)
     # Get screen width and height
     screen_width = widget_root.winfo_screenwidth()
     screen_height = widget_root.winfo_screenheight()
@@ -118,42 +54,100 @@ def create_widget(x, y,):
         'lowPrice': tk.Label(widget_root),
         'updatedAt': tk.Label(widget_root),
     }
+    def update_widget(formatted_data):
+                last_price_color = "#00C186" if formatted_data['lastPriceUpDown'] == "up" else "#FF5761"
+                labels['symbol'].config(text=formatted_data['symbol'])
+                labels['lastPriceUpDown'].config(text=formatted_data['lastPriceUpDown'])
+                labels['lastPrice'].config(text=formatted_data['lastPrice'], fg=last_price_color)
 
-        # Initialize labels with empty or placeholder values
-    for key, row, col, colspan in [
-            ('symbol', 0, 0, 2),
-            ('lastPriceUpDown', 0, 2, 1),
-            ('lastPrice', 0, 3, 3),
-            ('changePercent', 0, 6, 2),
-            ('bestBid', 1, 0, 2),
-            ('bestAsk', 1, 2, 2),
-            ('volume', 1, 4, 4),
-            ('highPrice', 2, 0, 2),
-            ('lowPrice', 2, 2, 2),
-            ('updatedAt', 2, 4, 4),
+                change_percent = formatted_data['changePercent']
+                if change_percent.startswith("+"):
+                    change_percent_color = "#00C186"  # Green
+                elif change_percent.startswith("-"):
+                    change_percent_color = "#FF5761"  # Red
+                else:
+                    change_percent_color = "#0000FF"  # Blue
+                labels['changePercent'].config(text=change_percent, fg=change_percent_color)
+                labels['bestBid'].config(text=formatted_data['bestBid'])
+                labels['bestAsk'].config(text=formatted_data['bestAsk'])
+                labels['volume'].config(text=formatted_data['volume'])
+                labels['highPrice'].config(text=formatted_data['highPrice'])
+                labels['lowPrice'].config(text=formatted_data['lowPrice'])
+                labels['updatedAt'].config(text=formatted_data['updatedAt'])
+    
+
+    # Initialize labels with empty or placeholder values
+    for key, row, col, colspan, width in [
+            ('symbol', 0, 0, 2, 10),
+            ('lastPriceUpDown', 0, 2, 1, 5),
+            ('lastPrice', 0, 3, 3, 10),
+            ('changePercent', 0, 6, 2, 10),
+            ('bestBid', 1, 0, 2, 10),
+            ('bestAsk', 1, 2, 2, 10),
+            ('volume', 1, 4, 4, 10),
+            ('highPrice', 2, 0, 2, 10),
+            ('lowPrice', 2, 2, 2, 10),
+            ('updatedAt', 2, 4, 4, 15),
         ]:
-            label = tk.Label(widget_root, text="", borderwidth=1, relief="solid")
+            label = tk.Label(widget_root, text="", borderwidth=1, relief="solid", width=width)
             label.grid(row=row, column=col, columnspan=colspan, sticky="nsew")
             labels[key] = label  # Store the label in the labels dictionary
-            #label.config(highlightthickness=1, highlightbackground=border_color)
-            #if col == 3:  # If this is the lastPrice label
-            #    label.config(fg=last_price_color)  # Set the text color based on lastPriceUpDown
+
+
     print("Widget made")
-    # Create and start the update thread
-    update_running = True
-    update_thread = threading.Thread(target=update_values)
-    update_thread.daemon = True
-    update_thread.start()
-    print("TH running")
     return widget_root
 
 
+def update_widget(formatted_data):
+                last_price_color = "#00C186" if formatted_data['lastPriceUpDown'] == "up" else "#FF5761"
+                labels['symbol'].config(text=formatted_data['symbol'])
+                labels['lastPriceUpDown'].config(text=formatted_data['lastPriceUpDown'])
+                labels['lastPrice'].config(text=formatted_data['lastPrice'], fg=last_price_color)
 
-def stop_update_thread():
-    global update_thread, update_running
-    update_running = False
-    if update_thread:
-        update_thread.join()
-        update_thread = None
-        print("th stoping")
-    print("idk why is that")
+                change_percent = formatted_data['changePercent']
+                if change_percent.startswith("+"):
+                    change_percent_color = "#00C186"  # Green
+                elif change_percent.startswith("-"):
+                    change_percent_color = "#FF5761"  # Red
+                else:
+                    change_percent_color = "#0000FF"  # Blue
+                labels['changePercent'].config(text=change_percent, fg=change_percent_color)
+                labels['bestBid'].config(text=formatted_data['bestBid'])
+                labels['bestAsk'].config(text=formatted_data['bestAsk'])
+                labels['volume'].config(text=formatted_data['volume'])
+                labels['highPrice'].config(text=formatted_data['highPrice'])
+                labels['lowPrice'].config(text=formatted_data['lowPrice'])
+                labels['updatedAt'].config(text=formatted_data['updatedAt'])
+
+# Function to load the configuration
+def load_config():
+    global always_on_top
+    with open('config.json', 'r') as file:
+        config = json.load(file)
+    always_on_top = config.get('always_on_top', False) # Read the always_on_top setting
+
+def toggle_always_on_top():
+    global always_on_top
+    always_on_top = not always_on_top
+    widget_root.wm_attributes("-topmost", always_on_top) # Update the widget's topmost attribute
+
+    # Update the config file
+    with open('config.json', 'r') as file:
+        config = json.load(file)
+    config['always_on_top'] = always_on_top
+    with open('config.json', 'w') as file:
+        json.dump(config, file)
+
+
+def on_drag(event):
+    if enable_drag:
+        x = widget_root.winfo_x() + event.x - widget_root._drag_data["x"]
+        y = widget_root.winfo_y() + event.y - widget_root._drag_data["y"]
+        widget_root.geometry(f'+{x}+{y}')
+
+def on_drag_start(event):
+    widget_root._drag_data = {"x": event.x, "y": event.y}
+
+
+
+    

@@ -1,17 +1,28 @@
 import tkinter as tk
 from tkinter import ttk
 import ez_widget as widget_window
+import ez_update
 import configparser
 import json
 
 # Global variable for the configuration window
 config_window = False
+widget = None
+updating = False
 
 def minimize_gui():
     root.iconify()
 
+# Function to toggle widget drag
 def toggle_drag():
     widget_window.enable_drag = var_drag.get() == 1
+    save_config() # Save the new setting to the config file
+
+# Function to toggle "always on top" setting
+def toggle_always_on_top():
+    if widget:
+        widget_window.toggle_always_on_top() # Call the function in the widget_window module
+    save_config() # Save the new setting to the config file
 
 # Function to read available symbols from a file
 def read_available_symbols(filename='ez_symbol_list.txt'):
@@ -73,21 +84,19 @@ def close_config_window():
         config_window.destroy()
         config_window = False
 
-
-
 def save_config():
     config['Position']['x'] = str(widget_window.widget_root.winfo_x())
     config['Position']['y'] = str(widget_window.widget_root.winfo_y())
+    config['Settings']['enable_drag'] = str(var_drag.get())
+    config['Settings']['always_on_top'] = str(var_always_on_top.get())
     with open('config.ini', 'w') as configfile:
         config.write(configfile)
 
 def show_widget():
     global widget
     if widget:
-        # If the widget is already open, close it
         close_widget()
-        print("Closed, because was open")
-        widget = None
+        print("Was Open")
     else:
         # If the widget is not open, create and show it
         x, y = config.get('Position', 'x'), config.get('Position', 'y')
@@ -95,17 +104,41 @@ def show_widget():
         widget.mainloop()
         print("Opened")
 
+        #start_update()
+        #print("Updating begin")
+        
 def close_widget():
     global widget
     if widget:
-        widget_window.stop_update_thread()  # Stop the update thread
+        stop_update()
         print("TH Killed")
         widget.destroy()
         widget = None
         print("Closed")
 
+
+def start_update():
+    global updating
+    global widget
+    if widget:
+        # Start the update thread
+        ez_update.start_update_thread()
+        updating = True
+        print("Updating Active")
+    print("No widget opened")
+
+def stop_update():
+    global updating
+    # Stop the update thread when needed
+    ez_update.stop_update_thread()
+    updating = False
+    print("Updating Stoped")
+
 def exit_gui():
-    close_config_window()
+    global config_window
+    if config_window:
+        close_config_window()
+    
     close_widget()
     root.destroy()
 
@@ -127,29 +160,45 @@ config = configparser.ConfigParser()
 config.read('config.ini')
 if 'Position' not in config:
     config['Position'] = {'x': '0', 'y': '0'}
+if 'Settings' not in config:
+    config['Settings'] = {'enable_drag': '0', 'always_on_top': '0'}
+
+# Read the settings
+enable_drag = int(config['Settings']['enable_drag'])
+always_on_top = int(config['Settings']['always_on_top'])
+
 
 # Gui elements
 root = tk.Tk()
 root.title("EZ Ticker")
 root.protocol("WM_DELETE_WINDOW", minimize_gui) # Minimize instead of close
+
+# Enable Drag checkbox
 var_drag = tk.IntVar()
+var_drag.set(enable_drag)
 check_drag = tk.Checkbutton(root, text="Enable Drag", variable=var_drag, command=toggle_drag)
 check_drag.pack()
+
+# Always on Top checkbox
+var_always_on_top = tk.IntVar()
+var_always_on_top.set(always_on_top)
+check_always_on_top = tk.Checkbutton(root, text="Always on Top", variable=var_always_on_top, command=toggle_always_on_top)
+check_always_on_top.pack()
+
 # Config Symbols button
 button_config_symbols = tk.Button(root, text="Config Symbols", command=config_symbols)
 button_config_symbols.pack()
+
 # Buttons
 button_show = tk.Button(root, text="Show Widget", command=show_widget)
 button_show.pack()
-button_close = tk.Button(root, text="Close Widget", command=close_widget)
-button_close.pack()
+button_show = tk.Button(root, text="Run Update", command=start_update)
+button_show.pack()
 button_save = tk.Button(root, text="Save Position", command=save_config)
 button_save.pack()
 reset_button = tk.Button(root, text="Reset Position", command=reset_position)
 reset_button.pack()
 button_exit = tk.Button(root, text="Exit", command=exit_gui)
 button_exit.pack()
-
-widget = None
 root.mainloop()
 
