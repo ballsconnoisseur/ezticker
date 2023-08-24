@@ -42,9 +42,11 @@ def read_symbols_from_config():
 
 # Function to open symbol configuration window
 def config_symbols():
-    global config_window
+    global config_window, widget
+    print("B- Config Window Opened!")
     if config_window:
         config_window.lift()  # Bring the existing window to the front
+        print("B- Config Window Was Open, lifting from background")
         return
 
     config_window = tk.Toplevel(root)
@@ -71,9 +73,11 @@ def config_symbols():
         global config_window  # Add this line
         selected_symbols = [var.get() for var in symbol_vars]
         save_symbols_to_config(selected_symbols)
-        close_widget()
+        print("B- Preset saved")
+        if widget:
+            close_widget()
         show_widget()   # Show the widget again with the new configuration
-        print("Preset saved")
+        
 
     button_save_config_symbols = tk.Button(config_window, text="Save", command=save_config_symbols)
     button_save_config_symbols.grid(row=9, column=0, columnspan=2)
@@ -95,52 +99,52 @@ def save_config():
 def show_widget():
     global widget
     if widget:
+        print("B- Widget Was Open, Closing widget")
         close_widget()
-        print("Was Open")
     else:
         # If the widget is not open, create and show it
         x, y = config.get('Position', 'x'), config.get('Position', 'y')
         widget = widget_window.create_widget(x, y)
         widget.mainloop()
-        print("Opened")
-
-        #start_update()
-        #print("Updating begin")
+        print("B- Widget Opened")
 
 def close_widget():
     global widget
-    if widget:
+    global updating
+    if updating:
         stop_update()
-        print("TH Killed")
+        print("B- Updating Stoped by close_widget")
+    if widget:
         widget.destroy()
         widget = None
-        print("Closed")
-
+        print("B- Widget Closed")
 
 def start_update():
     global updating
     global widget
     if widget:
         if updating:
-            print("Updating was on")
+            print("B- Updating Was Strarted Earlier, Restarting Updating by start_update")
             stop_update()
+            updating = False
             return
         else:
             # Start the update thread
             ez_update.start_update_thread()
             updating = True
-            print("Updating Active")
-    print("No widget opened")
+            print("B- Updating Started")
+    print("B- No widget opened")
 
 def stop_update():
     global updating
     # Stop the update thread when needed
     ez_update.stop_update_thread()
     updating = False
-    print("Updating Stoped")
+    print("B- Updating Stoped")
 
 def exit_gui():
     global widget, updating, config_window
+    print("B- Shutting down...")
     if config_window:
         close_config_window()
     if updating:
@@ -150,8 +154,10 @@ def exit_gui():
     root.destroy()
 
 def reset_position():
+    global widget
+    print("B- Position reseted.")
     screen_width = root.winfo_screenwidth()
-    widget_width = int(screen_width * 0.18)
+    widget_width = int(screen_width * 0.21)
 
     # Set position to top-right corner
     x = screen_width - widget_width
@@ -161,7 +167,11 @@ def reset_position():
     config.set('Position', 'y', str(y))
     with open('config.ini', 'w') as configfile:
         config.write(configfile)
+    if widget:
+        close_widget()
+        print("B- Widget Closed by Positon Reset")
     show_widget()
+    print("B- Widget Reopened by Positon Reset")
 
 config = configparser.ConfigParser()
 config.read('config.ini')
@@ -173,7 +183,6 @@ if 'Settings' not in config:
 # Read the settings
 enable_drag = int(config['Settings']['enable_drag'])
 always_on_top = int(config['Settings']['always_on_top'])
-
 
 # Gui elements
 root = tk.Tk()
@@ -207,5 +216,7 @@ reset_button = tk.Button(root, text="Reset Position", command=reset_position)
 reset_button.pack()
 button_exit = tk.Button(root, text="Exit", command=exit_gui)
 button_exit.pack()
+
+
 root.mainloop()
 

@@ -2,7 +2,7 @@ import tkinter as tk
 import json
 
 enable_drag = False
-always_on_top = False
+always_on_top = True
 
 
 def create_widget(x, y):
@@ -19,8 +19,8 @@ def create_widget(x, y):
     screen_height = widget_root.winfo_screenheight()
 
     # Calculate widget width and height
-    widget_width = int(screen_width * 0.18)
-    widget_height = int(screen_height * 0.09)
+    widget_width = int(screen_width * 0.21)
+    widget_height = int(screen_height * 0.11)
 
     # Set default position to top-right corner if x and y are not provided
     if x is None or y is None:
@@ -40,7 +40,7 @@ def create_widget(x, y):
         widget_root.grid_columnconfigure(i, weight=1)
 
     load_config()  # Load the configuration
-
+    print("W- Config Loaded by create_widget")
     # Create labels for the data
     global labels
     labels = {
@@ -56,49 +56,47 @@ def create_widget(x, y):
         'updatedAt': tk.Label(widget_root),
     }
     
-
     # Initialize labels with empty or placeholder values
-    for key, row, col, colspan, width in [
-            ('symbol', 0, 0, 2, 10),
-            ('lastPriceUpDown', 0, 2, 1, 5),
-            ('lastPrice', 0, 3, 3, 10),
-            ('changePercent', 0, 6, 2, 10),
-            ('bestBid', 1, 0, 2, 10),
-            ('bestAsk', 1, 2, 2, 10),
-            ('volume', 1, 4, 4, 10),
-            ('highPrice', 2, 0, 2, 10),
-            ('lowPrice', 2, 2, 2, 10),
-            ('updatedAt', 2, 4, 4, 15),
+    for key, row, col, colspan, rowspan, width, font_size in [
+            ('symbol', 0, 0, 2, 1, 10, 12),
+            ('lastPriceUpDown', 0, 2, 1, 1, 5, 12),
+            ('lastPrice', 0, 3, 3, 1, 10, 14),
+            ('changePercent', 0, 6, 2, 1, 10, 12),
+            ('bestBid', 1, 0, 2, 1, 10, 12),
+            ('bestAsk', 1, 2, 2, 1, 10, 12),
+            ('volume', 1, 4, 4, 1, 10, 12),
+            ('highPrice', 2, 0, 2, 1, 10, 12),
+            ('lowPrice', 2, 2, 2, 1, 10, 12),
+            ('updatedAt', 2, 4, 4, 1, 15, 12),
         ]:
-            label = tk.Label(widget_root, text="", borderwidth=1, relief="solid", width=width)
-            label.grid(row=row, column=col, columnspan=colspan, sticky="nsew")
+            label = tk.Label(widget_root, text="", borderwidth=1, relief="solid", width=width, font=("Helvetica", font_size))
+            label.grid(row=row, column=col, columnspan=colspan, rowspan=rowspan, sticky="nsew")
             labels[key] = label  # Store the label in the labels dictionary
 
-
-    print("Widget made")
+    print("W- Widget made!")
     return widget_root
 
 
 def update_widget(formatted_data):
-            last_price_color = "#00C186" if formatted_data['lastPriceUpDown'] == "up" else "#FF5761"
-            labels['symbol'].config(text=formatted_data['symbol'])
-            labels['lastPriceUpDown'].config(text=formatted_data['lastPriceUpDown'])
-            labels['lastPrice'].config(text=formatted_data['lastPrice'], fg=last_price_color)
+    last_price_color = "#00C186" if formatted_data['lastPriceUpDown'] == "up" else "#FF5761"
+    labels['symbol'].config(text=formatted_data['symbol'])
+    labels['lastPriceUpDown'].config(text=formatted_data['lastPriceUpDown'])
+    labels['lastPrice'].config(text=formatted_data['lastPrice'], fg=last_price_color)
 
-            change_percent = formatted_data['changePercent']
-            if change_percent.startswith("+"):
-                    change_percent_color = "#00C186"  # Green
-            elif change_percent.startswith("-"):
-                    change_percent_color = "#FF5761"  # Red
-            else:
-                change_percent_color = "#0000FF"  # Blue
-            labels['changePercent'].config(text=change_percent, fg=change_percent_color)
-            labels['bestBid'].config(text=formatted_data['bestBid'])
-            labels['bestAsk'].config(text=formatted_data['bestAsk'])
-            labels['volume'].config(text=formatted_data['volume'])
-            labels['highPrice'].config(text=formatted_data['highPrice'])
-            labels['lowPrice'].config(text=formatted_data['lowPrice'])
-            labels['updatedAt'].config(text=formatted_data['updatedAt'])
+    change_percent = formatted_data['changePercent']
+    if change_percent.startswith("+"):
+            change_percent_color = "#00C186"  # Green
+    elif change_percent.startswith("-"):
+            change_percent_color = "#FF5761"  # Red
+    else:
+        change_percent_color = "#0000FF"  # Blue
+    labels['changePercent'].config(text=change_percent, fg=change_percent_color)
+    labels['bestBid'].config(text=formatted_data['bestBid'])
+    labels['bestAsk'].config(text=formatted_data['bestAsk'])
+    labels['volume'].config(text=formatted_data['volume'])
+    labels['highPrice'].config(text=formatted_data['highPrice'])
+    labels['lowPrice'].config(text=formatted_data['lowPrice'])
+    labels['updatedAt'].config(text=formatted_data['updatedAt'])
 
 # Function to load the configuration
 def load_config():

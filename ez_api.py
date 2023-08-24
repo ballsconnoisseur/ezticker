@@ -11,5 +11,5 @@ def get_market_by_symbol(symbol):
     if response.status_code == 200:
         return response.json()
     else:
-        print(f"Error fetching market data for symbol {symbol}: {response.status_code}")
+        print(f"A- Error fetching market data for symbol {symbol}: {response.status_code}")
         return None

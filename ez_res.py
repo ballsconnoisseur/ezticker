@@ -16,7 +16,7 @@ def format_market_data(symbol):
 
     if market_data:
         # Convert updatedAt to time format
-        updated_at = datetime.fromtimestamp(market_data['updatedAt'] / 1000).strftime('%Y-%m-%d %H:%M:%S')
+        updated_at = datetime.fromtimestamp(market_data['updatedAt'] / 1000).strftime('%H:%M:%S')
 
         # Add "%" to changePercent
         change_percent = str(market_data['changePercent']) + " %"
@@ -51,7 +51,7 @@ def format_market_data(symbol):
         }
         return formatted_data
     else:
-        print(f"Failed to fetch market data for symbol {symbol}")
+        print(f"R- Failed to fetch market data for symbol {symbol}")
         return None
 
 
