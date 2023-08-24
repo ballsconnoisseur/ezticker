@@ -1,5 +1,5 @@
 
-{ez_ticker} is easy to use, simple and light tool for traders, investors, or financial enthusiasts who want to monitor specific market symbols.
+`ez_ticker` is easy to use, simple and light tool for traders, investors, or financial enthusiasts who want to monitor specific market symbols.
 
 ### Purpose:
 
@@ -56,6 +56,7 @@ Here's a brief description of its functionality and components!
 ### Interaction Between Components:
 
 - **ez_base.py:**
+                  THIS IS FILE YOU RUN!
                   Is main control panel displayed as simple `(GUI)`, interacting with `ez_widget.py` to display the widget and with `ez_update.py` to start and stop the update thread.
                   It also handles configuration management.
 
