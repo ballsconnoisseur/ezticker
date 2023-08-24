@@ -106,7 +106,7 @@ def show_widget():
 
         #start_update()
         #print("Updating begin")
-        
+
 def close_widget():
     global widget
     if widget:
@@ -121,10 +121,15 @@ def start_update():
     global updating
     global widget
     if widget:
-        # Start the update thread
-        ez_update.start_update_thread()
-        updating = True
-        print("Updating Active")
+        if updating:
+            print("Updating was on")
+            stop_update()
+            return
+        else:
+            # Start the update thread
+            ez_update.start_update_thread()
+            updating = True
+            print("Updating Active")
     print("No widget opened")
 
 def stop_update():
@@ -135,11 +140,13 @@ def stop_update():
     print("Updating Stoped")
 
 def exit_gui():
-    global config_window
+    global widget, updating, config_window
     if config_window:
         close_config_window()
-    
-    close_widget()
+    if updating:
+        stop_update()
+    if widget:
+        close_widget()
     root.destroy()
 
 def reset_position():

@@ -3,7 +3,8 @@ import json
 
 enable_drag = False
 always_on_top = False
-labels = {}
+
+
 def create_widget(x, y):
     global widget_root, always_on_top
 
@@ -54,26 +55,6 @@ def create_widget(x, y):
         'lowPrice': tk.Label(widget_root),
         'updatedAt': tk.Label(widget_root),
     }
-    def update_widget(formatted_data):
-                last_price_color = "#00C186" if formatted_data['lastPriceUpDown'] == "up" else "#FF5761"
-                labels['symbol'].config(text=formatted_data['symbol'])
-                labels['lastPriceUpDown'].config(text=formatted_data['lastPriceUpDown'])
-                labels['lastPrice'].config(text=formatted_data['lastPrice'], fg=last_price_color)
-
-                change_percent = formatted_data['changePercent']
-                if change_percent.startswith("+"):
-                    change_percent_color = "#00C186"  # Green
-                elif change_percent.startswith("-"):
-                    change_percent_color = "#FF5761"  # Red
-                else:
-                    change_percent_color = "#0000FF"  # Blue
-                labels['changePercent'].config(text=change_percent, fg=change_percent_color)
-                labels['bestBid'].config(text=formatted_data['bestBid'])
-                labels['bestAsk'].config(text=formatted_data['bestAsk'])
-                labels['volume'].config(text=formatted_data['volume'])
-                labels['highPrice'].config(text=formatted_data['highPrice'])
-                labels['lowPrice'].config(text=formatted_data['lowPrice'])
-                labels['updatedAt'].config(text=formatted_data['updatedAt'])
     
 
     # Initialize labels with empty or placeholder values
@@ -99,25 +80,25 @@ def create_widget(x, y):
 
 
 def update_widget(formatted_data):
-                last_price_color = "#00C186" if formatted_data['lastPriceUpDown'] == "up" else "#FF5761"
-                labels['symbol'].config(text=formatted_data['symbol'])
-                labels['lastPriceUpDown'].config(text=formatted_data['lastPriceUpDown'])
-                labels['lastPrice'].config(text=formatted_data['lastPrice'], fg=last_price_color)
+            last_price_color = "#00C186" if formatted_data['lastPriceUpDown'] == "up" else "#FF5761"
+            labels['symbol'].config(text=formatted_data['symbol'])
+            labels['lastPriceUpDown'].config(text=formatted_data['lastPriceUpDown'])
+            labels['lastPrice'].config(text=formatted_data['lastPrice'], fg=last_price_color)
 
-                change_percent = formatted_data['changePercent']
-                if change_percent.startswith("+"):
+            change_percent = formatted_data['changePercent']
+            if change_percent.startswith("+"):
                     change_percent_color = "#00C186"  # Green
-                elif change_percent.startswith("-"):
+            elif change_percent.startswith("-"):
                     change_percent_color = "#FF5761"  # Red
-                else:
-                    change_percent_color = "#0000FF"  # Blue
-                labels['changePercent'].config(text=change_percent, fg=change_percent_color)
-                labels['bestBid'].config(text=formatted_data['bestBid'])
-                labels['bestAsk'].config(text=formatted_data['bestAsk'])
-                labels['volume'].config(text=formatted_data['volume'])
-                labels['highPrice'].config(text=formatted_data['highPrice'])
-                labels['lowPrice'].config(text=formatted_data['lowPrice'])
-                labels['updatedAt'].config(text=formatted_data['updatedAt'])
+            else:
+                change_percent_color = "#0000FF"  # Blue
+            labels['changePercent'].config(text=change_percent, fg=change_percent_color)
+            labels['bestBid'].config(text=formatted_data['bestBid'])
+            labels['bestAsk'].config(text=formatted_data['bestAsk'])
+            labels['volume'].config(text=formatted_data['volume'])
+            labels['highPrice'].config(text=formatted_data['highPrice'])
+            labels['lowPrice'].config(text=formatted_data['lowPrice'])
+            labels['updatedAt'].config(text=formatted_data['updatedAt'])
 
 # Function to load the configuration
 def load_config():
