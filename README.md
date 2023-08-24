@@ -9,6 +9,7 @@ It provides a customizable and interactive interface to track real-time market t
 
 Here's a brief description of its functionality and components!
 
+RUN BY: `ez_base.py`
 
 ### Functionality:
 
@@ -55,22 +56,30 @@ Here's a brief description of its functionality and components!
 
 ### Interaction Between Components:
 
-- **ez_base.py:**
-                  THIS IS FILE YOU RUN!
+- **`ez_base.py`:**
+                  !        !        !        YOU RUN THIS FILE        !        !        !
                   Is main control panel displayed as simple `(GUI)`, interacting with `ez_widget.py` to display the widget and with `ez_update.py` to start and stop the update thread.
                   It also handles configuration management.
 
-- **ez_widget.py:**
+- **`ez_widget.py`:**
                     Responsible for the visual representation of the widget, including the ability to drag and set it to always be on top.
 
-- **ez_update.py:**
+- **`ez_update.py`:**
                     Manages the fetching and updating of market data, working in conjunction with `ez_res.py`.
 
-- **ez_res.py:**
+- **`ez_res.py`:**
                     Likely formats the raw market data for display in the widget.
 
-- **ez_api.py:**
+- **`ez_api.py`:**
                     Requests raw market data for `ez_res.py` to work with.
 
+### Debug console prints: 
+B- `ez_base.py`
+W- `ez_widget.py`
+U- `ez_update.py`
+R- `ez_res.py`
+A- `ez_api.py`
 
-Any questions dm.
+Wish you Happy using, and big incomes!
+
+Any questions DM.
