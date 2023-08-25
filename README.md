@@ -11,6 +11,8 @@ Here's a brief description of its functionality and components!
 
 RUN BY: `ez_base.py`
 
+![widget_showout](https://github.com/ballsconnoisseur/ezticker/assets/142732987/86ec486b-0c31-4d2b-b5c1-def874b2c176)
+
 ### Functionality:
 
 - **Real-Time Market Data Tracking:**
