@@ -9,9 +9,21 @@ import json
 config_window = False
 widget = None
 updating = False
+quiting = False
 
 def minimize_gui():
     root.iconify()
+
+def center_window():
+    window_width = root.winfo_reqwidth()
+    window_height = root.winfo_reqheight()
+    screen_width = root.winfo_screenwidth()
+    screen_height = root.winfo_screenheight()
+
+    x_position = (screen_width // 2) - (window_width // 2)
+    y_position = (screen_height // 2) - (window_height // 2)
+
+    root.geometry(f'+{x_position}+{y_position}')
 
 # Function to toggle widget drag
 def toggle_drag():
@@ -97,16 +109,21 @@ def save_config():
         config.write(configfile)
 
 def show_widget():
-    global widget
-    if widget:
-        print("B- Widget Was Open, Closing widget")
+    global quiting, widget
+    if quiting:
+        print("B- Quiting... can't open widget now")
         close_widget()
-    else:
-        # If the widget is not open, create and show it
-        x, y = config.get('Position', 'x'), config.get('Position', 'y')
-        widget = widget_window.create_widget(x, y)
-        widget.mainloop()
-        print("B- Widget Opened")
+    else: 
+        if widget:
+            print("B- Widget Was Open, Closing widget")
+            close_widget()
+        else:
+            # If the widget is not open, create and show it
+            x, y = config.get('Position', 'x'), config.get('Position', 'y')
+            widget = widget_window.create_widget(x, y)
+            print("B- Widget Opened")
+            widget.mainloop()
+            
 
 def close_widget():
     global widget
@@ -143,8 +160,9 @@ def stop_update():
     print("B- Updating Stoped")
 
 def exit_gui():
-    global widget, updating, config_window
+    global quiting, widget, updating, config_window
     print("B- Shutting down...")
+    quiting = True
     if config_window:
         close_config_window()
     if updating:
@@ -186,37 +204,62 @@ always_on_top = int(config['Settings']['always_on_top'])
 
 # Gui elements
 root = tk.Tk()
-root.title("EZ Ticker")
+root.title("ez_")
 root.protocol("WM_DELETE_WINDOW", minimize_gui) # Minimize instead of close
+root.configure(bg="#2a2a2a")
+
+# Center the window after it has been drawn
+root.after(1, center_window)
+
+
+# Font and background colors presets/styles
+style_one = {'fg': '#FAF9F6', 'bg': '#2c2c2c'}
+style_two = {'fg': '#F9F6EE', 'bg': '#2f2f2f'}
+style_three = {'fg': '#880808', 'bg': '#1c1c1c'}
+
+# New title box
+title_label = tk.Label(root, text="EZ Ticker Configuration", **style_two)
+title_label.grid(row=0, column=0, columnspan=2, sticky="ew")
+
+# Config Symbols button
+button_config_symbols = tk.Button(root, text="Config Symbols", command=config_symbols, **style_one)
+button_config_symbols.grid(row=1, column=0, columnspan=2, sticky="ew")
+
+# Show Widget button
+button_show = tk.Button(root, text="Show Widget", command=show_widget, **style_one)
+button_show.grid(row=2, column=0, sticky="ew")
+
+# Begin Updating button
+button_update = tk.Button(root, text="Begin Updating", command=start_update, **style_one)
+button_update.grid(row=2, column=1, sticky="ew")
+
+# Save Position button
+button_save = tk.Button(root, text="Save Position", command=save_config, **style_one)
+button_save.grid(row=3, column=0, sticky="ew")
+
+# Reset Position button
+reset_button = tk.Button(root, text="Reset Position", command=reset_position, **style_one)
+reset_button.grid(row=3, column=1, sticky="ew")
 
 # Enable Drag checkbox
 var_drag = tk.IntVar()
 var_drag.set(enable_drag)
-check_drag = tk.Checkbutton(root, text="Enable Drag", variable=var_drag, command=toggle_drag)
-check_drag.pack()
+check_drag = tk.Checkbutton(root, text="Enable Drag", variable=var_drag, command=toggle_drag, **style_two)
+check_drag.grid(row=4, column=0, sticky="ew")
 
 # Always on Top checkbox
 var_always_on_top = tk.IntVar()
 var_always_on_top.set(always_on_top)
-check_always_on_top = tk.Checkbutton(root, text="Always on Top", variable=var_always_on_top, command=toggle_always_on_top)
-check_always_on_top.pack()
+check_always_on_top = tk.Checkbutton(root, text="Always on Top", variable=var_always_on_top, command=toggle_always_on_top, **style_two)
+check_always_on_top.grid(row=4, column=1, sticky="ew")
 
-# Config Symbols button
-button_config_symbols = tk.Button(root, text="Config Symbols", command=config_symbols)
-button_config_symbols.pack()
+# Exit button
+button_exit = tk.Button(root, text="E X I T", command=exit_gui, **style_three)
+button_exit.grid(row=5, column=0, columnspan=2, sticky="ew")
 
-# Buttons
-button_show = tk.Button(root, text="Show Widget", command=show_widget)
-button_show.pack()
-button_show = tk.Button(root, text="Run Update", command=start_update)
-button_show.pack()
-button_save = tk.Button(root, text="Save Position", command=save_config)
-button_save.pack()
-reset_button = tk.Button(root, text="Reset Position", command=reset_position)
-reset_button.pack()
-button_exit = tk.Button(root, text="Exit", command=exit_gui)
-button_exit.pack()
-
+# Set equal weight for columns to distribute space evenly
+root.grid_columnconfigure(0, weight=1)
+root.grid_columnconfigure(1, weight=1)
 
 root.mainloop()
 

@@ -14,13 +14,21 @@ def create_widget(x, y):
     # Set the widget to always be on top if the always_on_top variable is True
     if always_on_top:
         widget_root.wm_attributes("-topmost", 1)
+    
+    # Set a transparent color
+    transparent_color = "white" # You can choose any color that doesn't conflict with other colors in your widget
+
+    # Set the transparent color for the main window
+    widget_root.configure(bg=transparent_color)
+    widget_root.wm_attributes('-transparentcolor', transparent_color)
+
     # Get screen width and height
     screen_width = widget_root.winfo_screenwidth()
     screen_height = widget_root.winfo_screenheight()
 
     # Calculate widget width and height
     widget_width = int(screen_width * 0.21)
-    widget_height = int(screen_height * 0.11)
+    widget_height = int(screen_height * 0.125)
 
     # Set default position to top-right corner if x and y are not provided
     if x is None or y is None:
@@ -28,7 +36,7 @@ def create_widget(x, y):
         y = 0
 
     widget_root.geometry(f'{widget_width}x{widget_height}+{x}+{y}')
-    widget_root.configure(bg='#2c2c2c') # Set background color
+
 
     widget_root.bind("<ButtonPress-1>", on_drag_start)
     widget_root.bind("<B1-Motion>", on_drag)
@@ -56,22 +64,33 @@ def create_widget(x, y):
         'updatedAt': tk.Label(widget_root),
     }
     
-    # Initialize labels with empty or placeholder values
-    for key, row, col, colspan, rowspan, width, font_size in [
-            ('symbol', 0, 0, 2, 1, 10, 12),
-            ('lastPriceUpDown', 0, 2, 1, 1, 5, 12),
-            ('lastPrice', 0, 3, 3, 1, 10, 14),
-            ('changePercent', 0, 6, 2, 1, 10, 12),
-            ('bestBid', 1, 0, 2, 1, 10, 12),
-            ('bestAsk', 1, 2, 2, 1, 10, 12),
-            ('volume', 1, 4, 4, 1, 10, 12),
-            ('highPrice', 2, 0, 2, 1, 10, 12),
-            ('lowPrice', 2, 2, 2, 1, 10, 12),
-            ('updatedAt', 2, 4, 4, 1, 15, 12),
+    # Initialize labels with placeholder values, and using this genius function give them visual values
+    for key, row, col, colspan, rowspan, width, height, font_size, anchor, border_width, sticky_val, text in [
+            ('titleText', 0, 0, 3, 1, 10, 1, 2, "w", 0, "nsew", "ez_ticker"), # Text
+            ('symbol', 0, 3, 9, 3, 10, 1, 10, "s", 0, "nsew", "AAA/BBB"),
+            ('bidText', 0, 11, 3, 1, 6, 1, 6, "center", 1, "nsew", "BID"), # Text
+            ('hiText', 0, 14, 3, 1, 6, 1, 6, "center", 1, "nsew", "HI"), # Text
+            ('bestBid', 1, 11, 3, 2, 8, 1, 2, "w", 1, "nsew", "-----"),
+            ('highPrice', 1, 14, 3, 2, 8, 1, 2, "w", 1, "nsew", "-----"),
+
+            ('lastPrice', 3, 0, 7, 4, 20, 2, 20, "e", 0, "nsew", "-----"),
+            ('changePercent', 3, 7, 4, 2, 4, 1, 12, "center", 1, "nsew", "%"),
+            ('bidtoaskPercent', 3, 11, 3, 2, 6, 1, 12, "center", 1, "nsew", "%"), # Text for now
+            ('hitoloPercent', 3, 14, 3, 2, 6, 1, 12, "center", 1, "nsew", "%"), # Text for now
+
+            ('lastPriceUpDown', 5, 7, 4, 2, 4, 1, 12, "center", 1, "nsew", "-"), # Arrow
+            ('bestAsk', 5, 11, 3, 2, 8, 1, 2, "w", 1, "nsew", "-----"),
+            ('lowPrice', 5, 14, 3, 2, 8, 1, 2, "w", 1, "nsew", "-----"),
+
+            ('volume', 7, 0, 7, 1, 20, 1, 8, "e", 0, "nsew", "----- VOL"),
+            ('updatedAt', 7, 7, 4, 1, 8, 1, 8, "center", 1, "nsew", "--- ---"),
+            ('askText', 7, 11, 3, 1, 6, 1, 6, "center", 1, "nsew", "ASK"), # Text
+            ('loText', 7, 14, 3, 1, 6, 1, 6, "center", 1, "nsew", "LO"), # Text
         ]:
-            label = tk.Label(widget_root, text="", borderwidth=1, relief="solid", width=width, font=("Helvetica", font_size))
-            label.grid(row=row, column=col, columnspan=colspan, rowspan=rowspan, sticky="nsew")
-            labels[key] = label  # Store the label in the labels dictionary
+        label = tk.Label(widget_root, text=text, height=height, borderwidth=border_width, relief="solid", width=width, fg="#fdf4dc", font=("fixedsys", font_size), bg=transparent_color, anchor=anchor)
+        label.grid(row=row, column=col, columnspan=colspan, rowspan=rowspan, sticky=sticky_val)
+        label.configure(bg=label.cget("bg"))  # Set the background color to itself to apply opacity
+        labels[key] = label  # Store the label in the labels dictionary
 
     print("W- Widget made!")
     return widget_root
@@ -80,7 +99,8 @@ def create_widget(x, y):
 def update_widget(formatted_data):
     last_price_color = "#00C186" if formatted_data['lastPriceUpDown'] == "up" else "#FF5761"
     labels['symbol'].config(text=formatted_data['symbol'])
-    labels['lastPriceUpDown'].config(text=formatted_data['lastPriceUpDown'])
+    last_price_up_down_symbol = "↗" if formatted_data['lastPriceUpDown'] == "up" else "↘"
+    labels['lastPriceUpDown'].config(text=last_price_up_down_symbol, fg=last_price_color)
     labels['lastPrice'].config(text=formatted_data['lastPrice'], fg=last_price_color)
 
     change_percent = formatted_data['changePercent']
