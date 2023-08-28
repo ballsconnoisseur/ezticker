@@ -11,7 +11,9 @@ Here's a brief description of its functionality and components!
 
 RUN BY: `ez_base.py`
 
-![widget_showout](https://github.com/ballsconnoisseur/ezticker/assets/142732987/86ec486b-0c31-4d2b-b5c1-def874b2c176)
+BTC/USDT & ETH/USDT as examples
+![widget_showout0151](https://github.com/ballsconnoisseur/ezticker/assets/142732987/089c14aa-7a3f-4328-8a6f-152279b03601)
+
 
 ### Functionality:
 
