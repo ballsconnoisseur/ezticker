@@ -1,5 +1,7 @@
 import tkinter as tk
+from tkinter import Canvas
 import json
+
 
 enable_drag = False
 always_on_top = True
@@ -16,7 +18,7 @@ def create_widget(x, y):
         widget_root.wm_attributes("-topmost", 1)
     
     # Set a transparent color
-    transparent_color = "white" # You can choose any color that doesn't conflict with other colors in your widget
+    transparent_color = "#010101" # You can choose any color that doesn't conflict with other colors in your widget
 
     # Set the transparent color for the main window
     widget_root.configure(bg=transparent_color)
@@ -27,8 +29,8 @@ def create_widget(x, y):
     screen_height = widget_root.winfo_screenheight()
 
     # Calculate widget width and height
-    widget_width = int(screen_width * 0.21)
-    widget_height = int(screen_height * 0.125)
+    widget_width = int(screen_width * 0.2)
+    widget_height = int(screen_height * 0.1)
 
     # Set default position to top-right corner if x and y are not provided
     if x is None or y is None:
@@ -66,51 +68,77 @@ def create_widget(x, y):
     
     # Initialize labels with placeholder values, and using this genius function give them visual values
     for key, row, col, colspan, rowspan, width, height, font_size, anchor, border_width, sticky_val, text in [
-            ('titleText', 0, 0, 3, 1, 10, 1, 2, "w", 0, "nsew", "ez_ticker"), # Text
-            ('symbol', 0, 3, 9, 3, 10, 1, 10, "s", 0, "nsew", "AAA/BBB"),
-            ('bidText', 0, 11, 3, 1, 6, 1, 6, "center", 1, "nsew", "BID"), # Text
-            ('hiText', 0, 14, 3, 1, 6, 1, 6, "center", 1, "nsew", "HI"), # Text
-            ('bestBid', 1, 11, 3, 2, 8, 1, 2, "w", 1, "nsew", "-----"),
-            ('highPrice', 1, 14, 3, 2, 8, 1, 2, "w", 1, "nsew", "-----"),
+            ('titleText', 0, 0, 11, 1, 10, 1, 12, "w", 1, "nsew", "ez_ticker"), # Text
+            ('bidText', 0, 11, 3, 1, 6, 1, 12, "center", 1, "nsew", "BID"), # Text
+            ('hiText', 0, 14, 3, 1, 6, 1, 12, "center", 1, "nsew", "HI"), # Text
 
-            ('lastPrice', 3, 0, 7, 4, 20, 2, 20, "e", 0, "nsew", "-----"),
-            ('changePercent', 3, 7, 4, 2, 4, 1, 12, "center", 1, "nsew", "%"),
-            ('bidtoaskPercent', 3, 11, 3, 2, 6, 1, 12, "center", 1, "nsew", "%"), # Text for now
-            ('hitoloPercent', 3, 14, 3, 2, 6, 1, 12, "center", 1, "nsew", "%"), # Text for now
+            ('symbol', 1, 0, 11, 1, 10, 0, 12, "center", 1, "nsew", "AAA/BBB"),
+            ('bestBid', 1, 11, 3, 1, 8, 1, 12, "w", 1, "nsew", "00000.00"),
+            ('highPrice', 1, 14, 3, 1, 8, 1, 12, "w", 1, "nsew", "00000.00"),
 
-            ('lastPriceUpDown', 5, 7, 4, 2, 4, 1, 12, "center", 1, "nsew", "-"), # Arrow
-            ('bestAsk', 5, 11, 3, 2, 8, 1, 2, "w", 1, "nsew", "-----"),
-            ('lowPrice', 5, 14, 3, 2, 8, 1, 2, "w", 1, "nsew", "-----"),
+            ('lastPrice', 2, 0, 7, 2, 20, 2, 24, "e", 1, "nsew", "00000.00$"),
+            ('changePercent', 2, 7, 4, 1, 4, 1, 12, "center", 1, "nsew", "999%"),
+            ('bidtoaskPercent', 2, 11, 3, 1, 6, 1, 12, "center", 1, "nsew", "999%"), # Text for now
+            ('hitoloPercent', 2, 14, 3, 1, 6, 1, 12, "center", 1, "nsew", "999%"), # Text for now
 
-            ('volume', 7, 0, 7, 1, 20, 1, 8, "e", 0, "nsew", "----- VOL"),
-            ('updatedAt', 7, 7, 4, 1, 8, 1, 8, "center", 1, "nsew", "--- ---"),
-            ('askText', 7, 11, 3, 1, 6, 1, 6, "center", 1, "nsew", "ASK"), # Text
-            ('loText', 7, 14, 3, 1, 6, 1, 6, "center", 1, "nsew", "LO"), # Text
+            ('lastPriceUpDown', 3, 7, 4, 1, 4, 1, 14, "center", 1, "nsew", "|"), # Arrow
+            ('bestAsk', 3, 11, 3, 1, 8, 1, 12, "w", 1, "nsew", "00000.00"),
+            ('lowPrice', 3, 14, 3, 1, 8, 1, 12, "w", 1, "nsew", "00000.00"),
+
+            ('volume', 4, 0, 7, 1, 20, 1, 14, "e", 1, "nsew", "00000.00 VOL"),
+            ('updatedAt', 4, 7, 4, 1, 8, 1, 12, "center", 1, "nsew", "--:--:--"),
+            ('askText', 4, 11, 3, 1, 6, 1, 12, "center", 1, "nsew", "ASK"), # Text
+            ('loText', 4, 14, 3, 1, 6, 1, 12, "center", 1, "nsew", "LO"), # Text
         ]:
-        label = tk.Label(widget_root, text=text, height=height, borderwidth=border_width, relief="solid", width=width, fg="#fdf4dc", font=("fixedsys", font_size), bg=transparent_color, anchor=anchor)
-        label.grid(row=row, column=col, columnspan=colspan, rowspan=rowspan, sticky=sticky_val)
-        label.configure(bg=label.cget("bg"))  # Set the background color to itself to apply opacity
+        color = "#00C186" if key in ['bidText', 'hiText', 'bestBid', 'highPrice'] else "#FF5761" if key in ['bestAsk', 'lowPrice', 'askText', 'loText'] else "#fdf4dc"
+        
+        canvas = Canvas(widget_root, height=height, bg=transparent_color)  # height in pixels
+        canvas.grid(row=row, column=col, columnspan=colspan, rowspan=rowspan, sticky=sticky_val)
+        
+        label = tk.Label(canvas, text=text, borderwidth=border_width, relief="solid", width=width, fg=color, font=("Fixedsys Excelsior 3.01", font_size), bg=transparent_color, anchor=anchor, padx=0, pady=0)
+        label.pack(side="top", fill="both", expand=True)
+        
         labels[key] = label  # Store the label in the labels dictionary
 
     print("W- Widget made!")
     return widget_root
 
 
+def animated_update(label, new_value, color=None):
+    def update_step():
+        nonlocal steps
+        if steps < len(new_value):
+            label.config(text=new_value[:steps+1])
+            if color:
+                label.config(fg=color)
+            steps += 1
+            label.after(65, update_step)  # 50ms delay between each update
+        else:
+            label.config(text=new_value)
+            if color:
+                label.config(fg=color)
+
+    steps = 0
+    update_step()
+
+
 def update_widget(formatted_data):
     last_price_color = "#00C186" if formatted_data['lastPriceUpDown'] == "up" else "#FF5761"
-    labels['symbol'].config(text=formatted_data['symbol'])
+    animated_update(labels['symbol'], formatted_data['symbol'])
+    
     last_price_up_down_symbol = "↗" if formatted_data['lastPriceUpDown'] == "up" else "↘"
-    labels['lastPriceUpDown'].config(text=last_price_up_down_symbol, fg=last_price_color)
-    labels['lastPrice'].config(text=formatted_data['lastPrice'], fg=last_price_color)
-
+    animated_update(labels['lastPriceUpDown'], last_price_up_down_symbol, last_price_color)
+    
+    animated_update(labels['lastPrice'], formatted_data['lastPrice'], last_price_color)
+    
     change_percent = formatted_data['changePercent']
     if change_percent.startswith("+"):
-            change_percent_color = "#00C186"  # Green
+        change_percent_color = "#00C186"  # Green
     elif change_percent.startswith("-"):
-            change_percent_color = "#FF5761"  # Red
+        change_percent_color = "#FF5761"  # Red
     else:
         change_percent_color = "#0000FF"  # Blue
-    labels['changePercent'].config(text=change_percent, fg=change_percent_color)
+    animated_update(labels['changePercent'], change_percent, change_percent_color)
     labels['bestBid'].config(text=formatted_data['bestBid'])
     labels['bestAsk'].config(text=formatted_data['bestAsk'])
     labels['volume'].config(text=formatted_data['volume'])

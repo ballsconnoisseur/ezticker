@@ -7,10 +7,11 @@ def format_price(price):
         integer_part, decimal_part = price_str.split(".")
         # Count the number of zeros after the first digit
         cut_zeros_count = len(decimal_part[1:]) - len(decimal_part[1:].lstrip('0'))
-        if cut_zeros_count > 0:
+        if cut_zeros_count > 1:
             return f"{integer_part}.{decimal_part[:1]}({cut_zeros_count}){decimal_part[1:].lstrip('0')}"
     return price_str
 
+# add ¢ if price is below 0.01 $ so it shows 1¢
 
 
 def format_market_data(symbol):
@@ -42,14 +43,14 @@ def format_market_data(symbol):
         formatted_data = {
             'updatedAt': updated_at,
             'symbol': market_data['symbol'],
-            'lastPrice': format_price(market_data['lastPrice']) + " $ ",
+            'lastPrice': format_price(market_data['lastPrice']) + "$",
             'lastPriceUpDown': market_data['lastPriceUpDown'],
             'bestBid': format_price(market_data['bestBid']),
             'bestAsk': format_price(market_data['bestAsk']),
             'changePercent': change_percent,
             'highPrice': format_price(market_data['highPrice']),
             'lowPrice': format_price(market_data['lowPrice']),
-            'volume': volume + " VOL ",
+            'volume': volume + " VOL",
         }
         return formatted_data
     else:

@@ -175,7 +175,7 @@ def reset_position():
     global widget
     print("B- Position reseted.")
     screen_width = root.winfo_screenwidth()
-    widget_width = int(screen_width * 0.21)
+    widget_width = int(screen_width * 0.2)
 
     # Set position to top-right corner
     x = screen_width - widget_width
@@ -207,7 +207,7 @@ root = tk.Tk()
 root.title("ez_")
 root.protocol("WM_DELETE_WINDOW", minimize_gui) # Minimize instead of close
 root.configure(bg="#2a2a2a")
-
+root.iconbitmap('ez_logotype.ico')
 # Center the window after it has been drawn
 root.after(1, center_window)
 
