@@ -50,7 +50,7 @@ def format_market_data(symbol):
             'changePercent': change_percent,
             'highPrice': format_price(market_data['highPrice']),
             'lowPrice': format_price(market_data['lowPrice']),
-            'volume': volume + " VOL",
+            'volume': volume + " VOL  ",
         }
         return formatted_data
     else:

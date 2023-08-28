@@ -68,15 +68,15 @@ def create_widget(x, y):
     
     # Initialize labels with placeholder values, and using this genius function give them visual values
     for key, row, col, colspan, rowspan, width, height, font_size, anchor, border_width, sticky_val, text in [
-            ('titleText', 0, 0, 11, 1, 10, 1, 12, "w", 1, "nsew", "ez_ticker"), # Text
+            ('titleText', 0, 0, 11, 1, 10, 1, 12, "w", 0, "nsew", "ez_ticker"), # Text
             ('bidText', 0, 11, 3, 1, 6, 1, 12, "center", 1, "nsew", "BID"), # Text
             ('hiText', 0, 14, 3, 1, 6, 1, 12, "center", 1, "nsew", "HI"), # Text
 
-            ('symbol', 1, 0, 11, 1, 10, 0, 12, "center", 1, "nsew", "AAA/BBB"),
+            ('symbol', 1, 3, 8, 1, 10, 0, 12, "w", 0, "nsew", "AAA/BBB"),
             ('bestBid', 1, 11, 3, 1, 8, 1, 12, "w", 1, "nsew", "00000.00"),
             ('highPrice', 1, 14, 3, 1, 8, 1, 12, "w", 1, "nsew", "00000.00"),
 
-            ('lastPrice', 2, 0, 7, 2, 20, 2, 24, "e", 1, "nsew", "00000.00$"),
+            ('lastPrice', 2, 0, 7, 2, 20, 2, 24, "e", 0, "nsew", "00000.00$"),
             ('changePercent', 2, 7, 4, 1, 4, 1, 12, "center", 1, "nsew", "999%"),
             ('bidtoaskPercent', 2, 11, 3, 1, 6, 1, 12, "center", 1, "nsew", "999%"), # Text for now
             ('hitoloPercent', 2, 14, 3, 1, 6, 1, 12, "center", 1, "nsew", "999%"), # Text for now
@@ -85,7 +85,7 @@ def create_widget(x, y):
             ('bestAsk', 3, 11, 3, 1, 8, 1, 12, "w", 1, "nsew", "00000.00"),
             ('lowPrice', 3, 14, 3, 1, 8, 1, 12, "w", 1, "nsew", "00000.00"),
 
-            ('volume', 4, 0, 7, 1, 20, 1, 14, "e", 1, "nsew", "00000.00 VOL"),
+            ('volume', 4, 0, 7, 1, 20, 1, 14, "e", 0, "nsew", "00000.00 VOL"),
             ('updatedAt', 4, 7, 4, 1, 8, 1, 12, "center", 1, "nsew", "--:--:--"),
             ('askText', 4, 11, 3, 1, 6, 1, 12, "center", 1, "nsew", "ASK"), # Text
             ('loText', 4, 14, 3, 1, 6, 1, 12, "center", 1, "nsew", "LO"), # Text
@@ -141,7 +141,7 @@ def update_widget(formatted_data):
     animated_update(labels['changePercent'], change_percent, change_percent_color)
     labels['bestBid'].config(text=formatted_data['bestBid'])
     labels['bestAsk'].config(text=formatted_data['bestAsk'])
-    labels['volume'].config(text=formatted_data['volume'])
+    animated_update(labels['volume'], formatted_data['volume'])
     labels['highPrice'].config(text=formatted_data['highPrice'])
     labels['lowPrice'].config(text=formatted_data['lowPrice'])
     labels['updatedAt'].config(text=formatted_data['updatedAt'])
