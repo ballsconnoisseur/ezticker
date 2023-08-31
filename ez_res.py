@@ -5,56 +5,122 @@ def format_price(price):
     price_str = str(price)
     if '.' in price_str:
         integer_part, decimal_part = price_str.split(".")
-        # Count the number of zeros after the first digit
-        cut_zeros_count = len(decimal_part[1:]) - len(decimal_part[1:].lstrip('0'))
-        if cut_zeros_count > 1:
-            return f"{integer_part}.{decimal_part[:1]}({cut_zeros_count}){decimal_part[1:].lstrip('0')}"
+        # Remove trailing zeros
+        decimal_part_trimmed = decimal_part.rstrip('0')
+        # If decimal part becomes empty after trimming, remove the dot
+        if decimal_part_trimmed:
+            return f"{integer_part}.{decimal_part_trimmed}"
+        else:
+            return integer_part
     return price_str
 
-# add ¢ if price is below 0.01 $ so it shows 1¢
 
-
-def format_market_data(symbol):
-    market_data = ez_api.get_market_by_symbol(symbol)
+def format_market_data(exchange, symbol):
+    market_data = ez_api.get_market(exchange, symbol)
 
     if market_data:
-        # Convert updatedAt to time format
-        updated_at = datetime.fromtimestamp(market_data['updatedAt'] / 1000).strftime('%H:%M:%S')
+        if exchange == 'okx':
+            volume = market_data['volCcy24h']
+            print("fucking okx")
+            if isinstance(volume, str):
+                volume = float(volume)
 
-        # Add "%" to changePercent
-        change_percent = str(market_data['changePercent']) + "%"
-
-        volume = market_data['volume']
-        if isinstance(volume, str):
-            volume = float(volume)
-
-        if volume >= 10**9:
-            volume = "{:.1f} B".format(volume / 10**9)
-        elif volume >= 10**6:
-            volume = "{:.1f} M".format(volume / 10**6)
-        elif volume >= 1000:
-            volume = "{:.1f} K".format(volume / 1000)
+            if volume >= 10**9:
+                volume = "{:.1f} B".format(volume / 10**9)
+            elif volume >= 10**6:
+                volume = "{:.1f} M".format(volume / 10**6)
+            elif volume >= 1000:
+                volume = "{:.1f} K".format(volume / 1000)
+            else:
+                volume = str(volume)
         else:
-            volume = str(volume)
+            volume = market_data['volume']
+            if isinstance(volume, str):
+                volume = float(volume)
+
+            if volume >= 10**9:
+                volume = "{:.1f} B".format(volume / 10**9)
+            elif volume >= 10**6:
+                volume = "{:.1f} M".format(volume / 10**6)
+            elif volume >= 1000:
+                volume = "{:.1f} K".format(volume / 1000)
+            else:
+                volume = str(volume)
 
 
 
-        # Extracting specific details
-        formatted_data = {
-            'updatedAt': updated_at,
-            'symbol': market_data['symbol'],
-            'lastPrice': format_price(market_data['lastPrice']) + "$",
-            'lastPriceUpDown': market_data['lastPriceUpDown'],
-            'bestBid': format_price(market_data['bestBid']),
-            'bestAsk': format_price(market_data['bestAsk']),
-            'changePercent': change_percent,
-            'highPrice': format_price(market_data['highPrice']),
-            'lowPrice': format_price(market_data['lowPrice']),
-            'volume': volume + " VOL  ",
-        }
-        return formatted_data
-    else:
-        print(f"R- Failed to fetch market data for symbol {symbol}")
-        return None
+        if exchange == 'binance':
+            updated_at = datetime.fromtimestamp(market_data['closeTime'] / 1000).strftime('%H:%M:%S')
+            formatted_data = {
+                'updatedAt': updated_at,
+                'symbol': market_data['symbol'],
+                'lastPrice': format_price(market_data['lastPrice']),
+                'bestBid': format_price(market_data['bidPrice']),
+                'bestAsk': format_price(market_data['askPrice']),
+                'highPrice': format_price(market_data['highPrice']),
+                'lowPrice': format_price(market_data['lowPrice']),
+                'volume': volume + " VOL  ",
+            }
+            print(formatted_data)
+            return formatted_data
 
+
+
+        elif exchange == 'xeggex':
+            updated_at = datetime.fromtimestamp(market_data['updatedAt'] / 1000).strftime('%H:%M:%S')
+            formatted_data = {
+                'updatedAt': updated_at,
+                'symbol': market_data['symbol'],
+                'lastPrice': format_price(market_data['lastPrice']),
+                'bestBid': format_price(market_data['bestBid']),
+                'bestAsk': format_price(market_data['bestAsk']),
+                'highPrice': format_price(market_data['highPrice']),
+                'lowPrice': format_price(market_data['lowPrice']),
+                'volume': volume + " VOL  ",
+            }
+            print(formatted_data)
+            return formatted_data
+        
+        
+        elif exchange == 'okx':
+            formatted_data = {
+                'updatedAt': market_data['ts'],
+                'symbol': market_data['instId'],
+                'lastPrice': format_price(market_data['last']),
+                'bestBid': format_price(market_data['bidPx']),
+                'bestAsk': format_price(market_data['askPx']),
+                'highPrice': format_price(market_data['high24h']),
+                'lowPrice': format_price(market_data['low24h']),
+                'volume': volume + " VOL  ",
+            }
+            print(formatted_data)
+            return formatted_data
+
+
+        elif exchange == 'coinbase':
+            formatted_data = {
+                'updatedAt': market_data['time'],
+                'symbol': market_data['display_name'],
+                'lastPrice': format_price(market_data['price']),
+                'bestBid': format_price(market_data['bid']),
+                'bestAsk': format_price(market_data['ask']),
+                'highPrice': format_price(market_data['high']),
+                'lowPrice': format_price(market_data['low']),
+                'volume': volume + " VOL  ",
+            }
+            print(formatted_data)
+            return formatted_data
+        
+        
+
+
+
+        else:
+            print(f"R- Failed to fetch market data for symbol {symbol}")
+            return None
+
+#format_market_data('binance', 'BTCUSDT')
+#format_market_data('xeggex', 'BTC_USDT')
+#format_market_data('okx', 'BTC-USDT')
+#format_market_data('coinbase', 'BTC-USDT')
 

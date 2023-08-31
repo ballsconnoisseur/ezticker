@@ -4,7 +4,7 @@ import ez_api_okx_getlist as okx
 import ez_api_coinbase_getlist as coinbase
 
 
-def get_all():
+def get_all_pairs():
     xeggex.get_market_list_xeggex
     binance.get_market_list_binance
     okx.get_market_list_okx

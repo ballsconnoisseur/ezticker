@@ -2,10 +2,8 @@ import tkinter as tk
 from tkinter import Canvas
 import json
 
-
-enable_drag = False
 always_on_top = True
-
+enable_drag = False
 
 def create_widget(x, y):
     global widget_root, always_on_top
@@ -81,7 +79,7 @@ def create_widget(x, y):
             ('bidtoaskPercent', 2, 11, 3, 1, 6, 1, 12, "center", 1, "nsew", "999%"), # Text for now
             ('hitoloPercent', 2, 14, 3, 1, 6, 1, 12, "center", 1, "nsew", "999%"), # Text for now
 
-            ('lastPriceUpDown', 3, 7, 4, 1, 4, 1, 14, "center", 1, "nsew", "|"), # Arrow
+            ('exchange', 3, 7, 4, 1, 4, 1, 10, "center", 1, "nsew", "EXCHANGE"), # Exchange name
             ('bestAsk', 3, 11, 3, 1, 8, 1, 12, "w", 1, "nsew", "00000.00"),
             ('lowPrice', 3, 14, 3, 1, 8, 1, 12, "w", 1, "nsew", "00000.00"),
 
@@ -123,22 +121,24 @@ def animated_update(label, new_value, color=None):
 
 
 def update_widget(formatted_data):
-    last_price_color = "#00C186" if formatted_data['lastPriceUpDown'] == "up" else "#FF5761"
+    #last_price_color = "#00C186" if formatted_data['lastPriceUpDown'] == "up" else "#FF5761"
     animated_update(labels['symbol'], formatted_data['symbol'])
     
-    last_price_up_down_symbol = "↗" if formatted_data['lastPriceUpDown'] == "up" else "↘"
-    animated_update(labels['lastPriceUpDown'], last_price_up_down_symbol, last_price_color)
+    #last_price_up_down_symbol = "↗" if formatted_data['lastPriceUpDown'] == "up" else "↘"
+    #animated_update(labels['lastPriceUpDown'], last_price_up_down_symbol, last_price_color)
     
-    animated_update(labels['lastPrice'], formatted_data['lastPrice'], last_price_color)
+    animated_update(labels['lastPrice'], formatted_data['lastPrice'])
     
-    change_percent = formatted_data['changePercent']
-    if change_percent.startswith("+"):
-        change_percent_color = "#00C186"  # Green
-    elif change_percent.startswith("-"):
-        change_percent_color = "#FF5761"  # Red
-    else:
-        change_percent_color = "#0000FF"  # Blue
-    animated_update(labels['changePercent'], change_percent, change_percent_color)
+    #change_percent = formatted_data['changePercent']
+    #if change_percent.startswith("+"):
+    #    change_percent_color = "#00C186"  # Green
+    #elif change_percent.startswith("-"):
+    #    change_percent_color = "#FF5761"  # Red
+    #else:
+    #    change_percent_color = "#0000FF"  # Blue
+    #animated_update(labels['changePercent'], change_percent, change_percent_color)
+    # Update the exchange label
+    labels['exchange'].config(text=formatted_data['exchange'])
     labels['bestBid'].config(text=formatted_data['bestBid'])
     labels['bestAsk'].config(text=formatted_data['bestAsk'])
     animated_update(labels['volume'], formatted_data['volume'])
@@ -151,7 +151,7 @@ def load_config():
     global always_on_top
     with open('config.json', 'r') as file:
         config = json.load(file)
-    always_on_top = config.get('always_on_top', False) # Read the always_on_top setting
+    always_on_top = config.get('always_on_top', True) # Read the always_on_top setting
 
 def toggle_always_on_top():
     global always_on_top
@@ -177,4 +177,3 @@ def on_drag_start(event):
 
 
 
-    

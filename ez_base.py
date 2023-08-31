@@ -14,16 +14,19 @@ quiting = False
 def minimize_gui():
     root.iconify()
 
-def center_window():
-    window_width = root.winfo_reqwidth()
-    window_height = root.winfo_reqheight()
-    screen_width = root.winfo_screenwidth()
-    screen_height = root.winfo_screenheight()
-
-    x_position = (screen_width // 2) - (window_width // 2)
+def center_window(window):
+    window.update_idletasks()
+    window_width = window.winfo_reqwidth()
+    window_height = window.winfo_reqheight()
+    screen_width = window.winfo_screenwidth()
+    screen_height = window.winfo_screenheight()
+    if window == config_window:
+        x_position = (screen_width // 4) - (window_width // 2)
+    else:
+        x_position = (screen_width // 2) - (window_width // 2)
     y_position = (screen_height // 2) - (window_height // 2)
 
-    root.geometry(f'+{x_position}+{y_position}')
+    window.geometry(f'+{x_position}+{y_position}')
 
 # Function to toggle widget drag
 def toggle_drag():
@@ -36,63 +39,99 @@ def toggle_always_on_top():
         widget_window.toggle_always_on_top() # Call the function in the widget_window module
     save_config() # Save the new setting to the config file
 
-# Function to read available symbols from a file
-def read_available_symbols(filename='ez_symbol_list.txt'):
+def read_symbols_for_exchange(exchange, filename_prefix='market_list_'):
+    filename = f"{filename_prefix}{exchange}.txt"
     with open(filename, 'r') as file:
         return [line.strip() for line in file.readlines()]
+    
 
-# Function to save symbols to config.json
-def save_symbols_to_config(symbols):
-    config_data = {"symbols": symbols, "interval": 7}
-    with open('config.json', 'w') as file:
-        json.dump(config_data, file)
 
-# Function to read symbols from config.json
-def read_symbols_from_config():
-    with open('config.json', 'r') as file:
-        return json.load(file)['symbols']
+style_one = {'fg': '#FAF9F6', 'bg': '#2c2c2c'}
+style_two = {'fg': '#F9F6EE', 'bg': '#2f2f2f'}
+style_three = {'fg': '#880808', 'bg': '#1c1c1c'}
 
 # Function to open symbol configuration window
 def config_symbols():
-    global config_window, widget
-    print("B- Config Window Opened!")
+    global config_window
     if config_window:
-        config_window.lift()  # Bring the existing window to the front
-        print("B- Config Window Was Open, lifting from background")
+        config_window.lift()
         return
 
+    def update_symbols_options(exchange_var, symbol_combobox):
+        exchange = exchange_var.get()
+        new_options = read_symbols_for_exchange(exchange)
+        symbol_combobox['values'] = new_options
+
+    # Save to config function
+    def save_config_symbols():
+        new_exchanges = [var.get() for var, _ in exchange_vars if var.get()]
+        new_symbols = [var.get() for var, _ in symbol_vars if var.get()]
+        new_interval = interval_var.get()
+        config_data = {"exchanges": new_exchanges, "symbols": new_symbols, "interval": new_interval}
+        with open('config.json', 'w') as file:
+            json.dump(config_data, file)
+
+    # Adding row function
+    def add_row():
+        exchange_var = tk.StringVar()
+        symbol_var = tk.StringVar()
+        exchange_vars.append((exchange_var, None))
+        symbol_vars.append((symbol_var, None))
+        create_row(exchange_var, symbol_var)
+
+    # Remove row function
+    def remove_row(row):
+        for widget in config_window.grid_slaves():
+            if int(widget.grid_info()['row']) == row:
+                widget.destroy()
+        del exchange_vars[row]
+        del symbol_vars[row]
+
+    def create_row(exchange_var, symbol_var):
+        row = len(exchange_vars)
+        exchange_combobox = ttk.Combobox(config_window, textvariable=exchange_var, values=available_exchanges)
+        exchange_combobox.grid(row=row, column=0)
+        symbol_combobox = ttk.Combobox(config_window, textvariable=symbol_var)
+        symbol_combobox.grid(row=row, column=1)
+        ttk.Combobox(config_window, textvariable=exchange_var, values=available_exchanges).grid(row=row, column=0)
+        tk.Entry(config_window, textvariable=symbol_var, **style_one).grid(row=row, column=2)
+        tk.Button(config_window, text="-", command=lambda row=row: remove_row(row), **style_three).grid(row=row, column=4, columnspan=2)  # Remove button
+        exchange_var.trace_add('write', lambda *args: update_symbols_options(exchange_var, symbol_combobox))
+
+    
     config_window = tk.Toplevel(root)
     config_window.title("Config Symbols")
-    config_window.protocol("WM_DELETE_WINDOW", close_config_window) # Close instead of destroy
+    # Center the window after it has been drawn
+    center_window(config_window)
+    with open('config.json', 'r') as file:
+        config_data = json.load(file)
+    interval_value = config_data.get('interval', 7)  # Default to 7 if not found
+    available_exchanges = ["xeggex", "binance", "okx", "coinbase"]
 
-    available_symbols = read_available_symbols()
-    current_symbols = read_symbols_from_config()
-
+    exchange_vars = []
     symbol_vars = []
-    for i in range(9):
-        var_symbol = tk.StringVar(config_window)
-        var_symbol.set(current_symbols[i])  # Set the default value
 
-        # Create a Combobox and set its values and height
-        combobox = ttk.Combobox(config_window, textvariable=var_symbol, values=available_symbols, height=11)
-        combobox.grid(row=i, column=0)
+    config_window.configure(bg="#2a2a2a")
+    # Top
+    tk.Label(config_window, text="Exchange", **style_two).grid(row=0, column=0, sticky="nsew")
+    tk.Label(config_window, text="Pair", **style_two).grid(row=0, column=1, sticky="nsew")
+    tk.Label(config_window, text="Custom", **style_two).grid(row=0, column=2, sticky="nsew")
 
-        entry_field = tk.Entry(config_window, textvariable=var_symbol)
-        entry_field.grid(row=i, column=1)
-        symbol_vars.append(var_symbol)
+    for exchange, symbol in zip(config_data['exchanges'], config_data['symbols']):
+        exchange_var = tk.StringVar(value=exchange)
+        symbol_var = tk.StringVar(value=symbol)
+        exchange_vars.append((exchange_var, None))
+        symbol_vars.append((symbol_var, None))
+        create_row(exchange_var, symbol_var)
 
-    def save_config_symbols():
-        global config_window  # Add this line
-        selected_symbols = [var.get() for var in symbol_vars]
-        save_symbols_to_config(selected_symbols)
-        print("B- Preset saved")
-        if widget:
-            close_widget()
-        show_widget()   # Show the widget again with the new configuration
-        
+    interval_var = tk.StringVar(value=str(interval_value))
 
-    button_save_config_symbols = tk.Button(config_window, text="Save", command=save_config_symbols)
-    button_save_config_symbols.grid(row=9, column=0, columnspan=2)
+    # Bottom 
+    tk.Label(config_window, text="Interval", **style_two).grid(row=100, column=0, sticky="nsew")
+    tk.Entry(config_window, textvariable=interval_var, **style_one).grid(row=100, column=1, sticky="nsew")
+    tk.Button(config_window, text="Save", command=save_config_symbols, **style_one).grid(row=100, column=2,columnspan=2)
+    tk.Button(config_window, text="+", command=add_row, **style_one).grid(row=100, column=4,columnspan=2)
+    
 
 def close_config_window():
     global config_window
@@ -209,7 +248,7 @@ root.protocol("WM_DELETE_WINDOW", minimize_gui) # Minimize instead of close
 root.configure(bg="#2a2a2a")
 root.iconbitmap('ez_logotype.ico')
 # Center the window after it has been drawn
-root.after(1, center_window)
+center_window(root)
 
 
 # Font and background colors presets/styles

@@ -6,53 +6,52 @@ from ez_widget import update_widget
 
 update_thread = None
 update_running = False
+exchanges = []
 symbols = []
 interval = 0
 
 def load_config():
-    global symbols, interval
+    global exchanges, symbols, interval
     with open('config.json', 'r') as file:
         config = json.load(file)
+    exchanges = config['exchanges']
     symbols = config['symbols']
     interval = config['interval']
 
-def fetch_data(symbol):
-    return ez_res.format_market_data(symbol)
+def fetch_data(exchange, symbol):
+    return ez_res.format_market_data(exchange, symbol)
 
 
 def update_values():
     global update_running
     load_config()
     print("U- Updating Started")
-    symbol_index = 0
     while update_running:
-        try:
-            symbol = symbols[symbol_index]
+        for exchange, symbol in zip(exchanges, symbols):
+            try:
+                # Skip None or empty symbols or exchanges
+                if not symbol or not exchange:
+                    continue
 
-            # Skip None or empty symbols
-            if symbol is None or not symbol:
-                print(f"U- Skipping empty symbol at index {symbol_index}")
-                symbol_index = (symbol_index + 1) % len(symbols)
-                continue
+                formatted_data = fetch_data(exchange, symbol)
+                formatted_data['exchange'] = exchange  # Add the exchange name
+                print(f"U- Exchange: {exchange}, Symbol: {symbol}")
+                print("U- Formatted data: \n", formatted_data)
 
-            formatted_data = fetch_data(symbol)
-            print("U- Symbol: ",symbol)
-            print("U- Formatted data: \n", formatted_data)
+                if formatted_data:
+                    update_widget(formatted_data)  # Call the function to update the widget
 
-            if formatted_data:
-                update_widget(formatted_data)  # Call the function to update the widget
+            except Exception as e:
+                print("U- Exception in update_values:", e)
 
-            symbol_index = (symbol_index + 1) % len(symbols)
+            # Sleep for the interval after each fetch
+            for i in range(interval):
+                if not update_running:
+                    break
+                print(f"U- Waiting... {i+1}/{interval} seconds")
+                time.sleep(1)
 
-        except Exception as e:
-            print("U- Exception in update_values:", e)
-        print("U- wait...")
-        # Break the sleep into smaller intervals and check update_running
-        for _ in range(interval):
-            if not update_running:
-                break
-            time.sleep(1)
-            print("U- wait.")
+
 
 def start_update_thread():
     global update_thread, update_running
@@ -69,3 +68,5 @@ def stop_update_thread():
         update_thread.join()
         update_thread = None
         print("U- TH Stoped")
+
+        
