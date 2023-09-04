@@ -43,14 +43,15 @@ def update_values():
 
             except Exception as e:
                 print("U- Exception in update_values:", e)
+                continue
 
             # Sleep for the interval after each fetch
             for i in range(interval):
                 if not update_running:
-                    break
-                print(f"U- Waiting... {i+1}/{interval} seconds")
+                    print("U- Waiting stoped.")
+                    return
+                print(f"U- Waiting... {i+1}/{interval} seconds.")
                 time.sleep(1)
-
 
 
 def start_update_thread():

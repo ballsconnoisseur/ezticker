@@ -14,14 +14,14 @@ def format_price(price):
             return integer_part
     return price_str
 
-
+#exeption 'volume', time and other this require rebuild but it is working
 def format_market_data(exchange, symbol):
     market_data = ez_api.get_market(exchange, symbol)
 
     if market_data:
         if exchange == 'okx':
             volume = market_data['volCcy24h']
-            print("fucking okx")
+            print("U- Okx formating .")
             if isinstance(volume, str):
                 volume = float(volume)
 
@@ -34,6 +34,7 @@ def format_market_data(exchange, symbol):
             else:
                 volume = str(volume)
         else:
+            print("U- Volume formating .")
             volume = market_data['volume']
             if isinstance(volume, str):
                 volume = float(volume)
@@ -48,7 +49,6 @@ def format_market_data(exchange, symbol):
                 volume = str(volume)
 
 
-
         if exchange == 'binance':
             updated_at = datetime.fromtimestamp(market_data['closeTime'] / 1000).strftime('%H:%M:%S')
             formatted_data = {
@@ -61,9 +61,7 @@ def format_market_data(exchange, symbol):
                 'lowPrice': format_price(market_data['lowPrice']),
                 'volume': volume + " VOL  ",
             }
-            print(formatted_data)
             return formatted_data
-
 
 
         elif exchange == 'xeggex':
@@ -78,7 +76,6 @@ def format_market_data(exchange, symbol):
                 'lowPrice': format_price(market_data['lowPrice']),
                 'volume': volume + " VOL  ",
             }
-            print(formatted_data)
             return formatted_data
         
         
@@ -93,7 +90,6 @@ def format_market_data(exchange, symbol):
                 'lowPrice': format_price(market_data['low24h']),
                 'volume': volume + " VOL  ",
             }
-            print(formatted_data)
             return formatted_data
 
 
@@ -108,11 +104,7 @@ def format_market_data(exchange, symbol):
                 'lowPrice': format_price(market_data['low']),
                 'volume': volume + " VOL  ",
             }
-            print(formatted_data)
             return formatted_data
-        
-        
-
 
 
         else:

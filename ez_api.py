@@ -9,7 +9,7 @@ def get_market(exchange, symbol):
         if response.status_code == 200:
             result = {k: v for k, v in response.json().items() if k in ['closeTime', 'symbol', 'lastPrice', 'bidPrice', 'askPrice', 'priceChangePercent', 'highPrice', 'lowPrice', 'volume']}
         else:
-            result = {'error': f"Error fetching market data from {exchange} for symbol {symbol}: {response.status_code}"}
+            result = {'error': f"A- Error fetching market data from {exchange} for symbol {symbol}: {response.status_code}"}
     
     elif exchange == 'xeggex':
         url = f'https://xeggex.com/api/v2/market/getbysymbol/{symbol}'
@@ -18,7 +18,7 @@ def get_market(exchange, symbol):
         if response.status_code == 200:
             result = {k: v for k, v in response.json().items() if k in ['updatedAt', 'symbol', 'lastPrice', 'bestBid', 'bestAsk', 'changePercent', 'highPrice', 'lowPrice', 'volume']}
         else:
-            result = {'error': f"Error fetching market data from {exchange} for symbol {symbol}: {response.status_code}"}
+            result = {'error': f"A- Error fetching market data from {exchange} for symbol {symbol}: {response.status_code}"}
     
     elif exchange == 'okx':
         url = f'https://www.okx.com/api/v5/market/ticker?instId={symbol}'
@@ -28,7 +28,7 @@ def get_market(exchange, symbol):
             data = response.json()['data'][0]
             result = {k: v for k, v in data.items() if k in ['ts', 'instId', 'last', 'bidPx', 'askPx', 'high24h', 'low24h', 'volCcy24h']}
         else:
-            result = {'error': f"Error fetching market data from {exchange} for symbol {symbol}: {response.status_code}"}
+            result = {'error': f"A- Error fetching market data from {exchange} for symbol {symbol}: {response.status_code}"}
     
     elif exchange == 'coinbase':
         url_head = f'https://api.exchange.coinbase.com/products/{symbol}'
@@ -46,9 +46,9 @@ def get_market(exchange, symbol):
             combined_data = {**head_data, **ticker_data, **stats_data}
             result = ({k: v for k, v in combined_data.items() if k in ['time', 'display_name', 'price', 'bid', 'ask', 'high', 'low', 'volume']})
         else:
-            result = {'error': f"Error fetching market data from {exchange} for symbol {symbol}"}
+            result = {'error': f"A- Error fetching market data from {exchange} for symbol {symbol}"}
     
     else:
-        result = {'error': f"Error no exchange chosen: {exchange} {symbol}"}
+        result = {'error': f"A- Error no exchange chosen: {exchange} {symbol}"}
     
     return result

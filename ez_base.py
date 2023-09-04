@@ -9,10 +9,7 @@ import json
 config_window = False
 widget = None
 updating = False
-quiting = False
 
-def minimize_gui():
-    root.iconify()
 
 def center_window(window):
     window.update_idletasks()
@@ -30,16 +27,20 @@ def center_window(window):
 
 # Function to toggle widget drag
 def toggle_drag():
-    widget_window.enable_drag = var_drag.get() == 1
-    save_config() # Save the new setting to the config file
+    if widget:
+        widget_window.enable_drag = var_drag.get() == 1
+    else:
+        print("B- No widget to toggle 'drag'.")
 
 # Function to toggle "always on top" setting
 def toggle_always_on_top():
     if widget:
         widget_window.toggle_always_on_top() # Call the function in the widget_window module
-    save_config() # Save the new setting to the config file
+        save_config() # Save the new setting to the config file
+    else:
+        print("B- No widget to toggle 'on top'.")
 
-def read_symbols_for_exchange(exchange, filename_prefix='market_list_'):
+def read_symbols_for_exchange(exchange, filename_prefix='ez_pair_list_'):
     filename = f"{filename_prefix}{exchange}.txt"
     with open(filename, 'r') as file:
         return [line.strip() for line in file.readlines()]
@@ -66,7 +67,7 @@ def config_symbols():
     def save_config_symbols():
         new_exchanges = [var.get() for var, _ in exchange_vars if var.get()]
         new_symbols = [var.get() for var, _ in symbol_vars if var.get()]
-        new_interval = interval_var.get()
+        new_interval = int(interval_var.get())  # Convert to integer
         config_data = {"exchanges": new_exchanges, "symbols": new_symbols, "interval": new_interval}
         with open('config.json', 'w') as file:
             json.dump(config_data, file)
@@ -142,26 +143,21 @@ def close_config_window():
 def save_config():
     config['Position']['x'] = str(widget_window.widget_root.winfo_x())
     config['Position']['y'] = str(widget_window.widget_root.winfo_y())
-    config['Settings']['enable_drag'] = str(var_drag.get())
     config['Settings']['always_on_top'] = str(var_always_on_top.get())
     with open('config.ini', 'w') as configfile:
         config.write(configfile)
 
 def show_widget():
-    global quiting, widget
-    if quiting:
-        print("B- Quiting... can't open widget now")
+    global widget
+    if widget:
+        print("B- Widget Was Open, Closing widget")
         close_widget()
-    else: 
-        if widget:
-            print("B- Widget Was Open, Closing widget")
-            close_widget()
-        else:
-            # If the widget is not open, create and show it
-            x, y = config.get('Position', 'x'), config.get('Position', 'y')
-            widget = widget_window.create_widget(x, y)
-            print("B- Widget Opened")
-            widget.mainloop()
+    else:
+        # If the widget is not open, create and show it
+        x, y = config.get('Position', 'x'), config.get('Position', 'y')
+        widget = widget_window.create_widget(x, y)
+        print("B- Widget Opened")
+        widget.mainloop()
             
 
 def close_widget():
@@ -170,10 +166,15 @@ def close_widget():
     if updating:
         stop_update()
         print("B- Updating Stoped by close_widget")
-    if widget:
+        if widget:
+            widget.destroy()
+            widget = None
+            print("B- Widget Closed")
+    else: 
         widget.destroy()
         widget = None
-        print("B- Widget Closed")
+        print("B- Widget Closed, wasn't updating.")
+
 
 def start_update():
     global updating
@@ -193,19 +194,16 @@ def start_update():
 
 def stop_update():
     global updating
-    # Stop the update thread when needed
-    ez_update.stop_update_thread()
-    updating = False
-    print("B- Updating Stoped")
+    if updating:
+        ez_update.stop_update_thread()
+        updating = False
+        print("B- Updating Stoped")
 
 def exit_gui():
-    global quiting, widget, updating, config_window
+    global widget, config_window
     print("B- Shutting down...")
-    quiting = True
     if config_window:
         close_config_window()
-    if updating:
-        stop_update()
     if widget:
         close_widget()
     root.destroy()
@@ -215,11 +213,9 @@ def reset_position():
     print("B- Position reseted.")
     screen_width = root.winfo_screenwidth()
     widget_width = int(screen_width * 0.2)
-
     # Set position to top-right corner
     x = screen_width - widget_width
     y = 0
-
     config.set('Position', 'x', str(x))
     config.set('Position', 'y', str(y))
     with open('config.ini', 'w') as configfile:
@@ -227,24 +223,22 @@ def reset_position():
     if widget:
         close_widget()
         print("B- Widget Closed by Positon Reset")
-    show_widget()
-    print("B- Widget Reopened by Positon Reset")
+
 
 config = configparser.ConfigParser()
 config.read('config.ini')
 if 'Position' not in config:
     config['Position'] = {'x': '0', 'y': '0'}
 if 'Settings' not in config:
-    config['Settings'] = {'enable_drag': '0', 'always_on_top': '0'}
+    config['Settings'] = {'always_on_top': '0'}
 
 # Read the settings
-enable_drag = int(config['Settings']['enable_drag'])
 always_on_top = int(config['Settings']['always_on_top'])
 
 # Gui elements
 root = tk.Tk()
 root.title("ez_")
-root.protocol("WM_DELETE_WINDOW", minimize_gui) # Minimize instead of close
+root.protocol("WM_DELETE_WINDOW", exit_gui) # Close all processes instead of only gui process
 root.configure(bg="#2a2a2a")
 root.iconbitmap('ez_logotype.ico')
 # Center the window after it has been drawn
@@ -282,7 +276,6 @@ reset_button.grid(row=3, column=1, sticky="ew")
 
 # Enable Drag checkbox
 var_drag = tk.IntVar()
-var_drag.set(enable_drag)
 check_drag = tk.Checkbutton(root, text="Enable Drag", variable=var_drag, command=toggle_drag, **style_two)
 check_drag.grid(row=4, column=0, sticky="ew")
 
@@ -291,10 +284,6 @@ var_always_on_top = tk.IntVar()
 var_always_on_top.set(always_on_top)
 check_always_on_top = tk.Checkbutton(root, text="Always on Top", variable=var_always_on_top, command=toggle_always_on_top, **style_two)
 check_always_on_top.grid(row=4, column=1, sticky="ew")
-
-# Exit button
-button_exit = tk.Button(root, text="E X I T", command=exit_gui, **style_three)
-button_exit.grid(row=5, column=0, columnspan=2, sticky="ew")
 
 # Set equal weight for columns to distribute space evenly
 root.grid_columnconfigure(0, weight=1)
