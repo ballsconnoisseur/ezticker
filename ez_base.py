@@ -155,14 +155,13 @@ def start_update():
     global widget
     if widget:
         if updating:
-            print("B- Updating Was Strarted Earlier, Restarting Updating by start_update")
             stop_update()
-            updating = False
             return
         else:
             ez_update.start_update_thread()
             updating = True
             print("B- Updating Started")
+            button_update.config(relief=tk.SUNKEN)
     print("B- No widget opened")
 
 def stop_update():
@@ -171,6 +170,7 @@ def stop_update():
         ez_update.stop_update_thread()
         updating = False
         print("B- Updating Stoped")
+        button_update.config(relief=tk.RAISED)
 
 def exit_gui():
     global widget, config_window
@@ -221,8 +221,8 @@ button_config_symbols.grid(row=1, column=0, columnspan=2, sticky="ew", padx=2, p
 button_show = tk.Button(root, text="Show Widget", command=show_widget, **style_two)
 button_show.grid(row=2, column=0, sticky="ew", padx=5, pady=5)
 
-# Begin Updating button
-button_update = tk.Button(root, text="Begin Updating", command=start_update, **style_two)
+# Updating button
+button_update = tk.Button(root, text="Updating", command=start_update, **style_two)
 button_update.grid(row=2, column=1, sticky="ew", padx=5, pady=5)
 
 # Save Position button
@@ -289,3 +289,4 @@ root.grid_columnconfigure(0, weight=1)
 root.grid_columnconfigure(1, weight=1)
 
 root.mainloop()
+

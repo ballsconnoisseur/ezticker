@@ -58,7 +58,6 @@ def format_market_data(exchange, symbol):
                 'lowPrice': format_price(market_data['lowPrice']),
                 'volume': volume + " VOL  ",
             }
-            print(formatted_data)
             return formatted_data
 
         elif exchange == 'xeggex':
@@ -73,7 +72,6 @@ def format_market_data(exchange, symbol):
                 'lowPrice': format_price(market_data['lowPrice']),
                 'volume': volume + " VOL  ",
             }
-            print(formatted_data)
             return formatted_data
         
         elif exchange == 'okx':
@@ -88,7 +86,6 @@ def format_market_data(exchange, symbol):
                 'lowPrice': format_price(market_data['low24h']),
                 'volume': volumex + " VOL  ",
             }
-            print(formatted_data)
             return formatted_data
 
         elif exchange == 'coinbase':

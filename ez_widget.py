@@ -65,8 +65,8 @@ def create_widget(x, y):
     for key, row, col, colspan, rowspan, width, height, font_size, anchor, border_width, sticky_val, text in [
 #0 Row
             ('titleText', 0, 0, 11, 1, 10, 1, 8, "center", 0, "nsew", "ez_ticker"), # Text
-            ('bidText', 0, 11, 3, 1, 6, 1, 12, "e", 1, "nsew", " B I D "), # Text
-            ('hiText', 0, 14, 3, 1, 6, 1, 12, "e", 1, "nsew", " H I "), # Text
+            ('bidText', 0, 11, 3, 1, 6, 1, 12, "e", 1, "nsew", " BID "), # Text
+            ('hiText', 0, 14, 3, 1, 6, 1, 12, "e", 1, "nsew", " HI "), # Text
 #1 Row
             ('symbol', 1, 3, 8, 1, 10, 0, 12, "center", 0, "nsew", "AAA/BBB"),
             ('bestBid', 1, 11, 3, 1, 8, 1, 12, "w", 1, "nsew", "00000.00"),
@@ -74,17 +74,17 @@ def create_widget(x, y):
 #2 Row
             ('lastPrice', 2, 0, 7, 2, 20, 2, 24, "e", 0, "nsew", "00000.00$"),
             ('changePercent', 2, 7, 4, 1, 4, 1, 12, "center", 1, "nsew", "tba % 24h"),
-            ('bidtoaskPercent', 2, 11, 3, 1, 6, 1, 12, "center", 1, "nsew", "tba % vs"), # Text for now
-            ('hitoloPercent', 2, 14, 3, 1, 6, 1, 12, "center", 1, "nsew", "tba % vs"), # Text for now
+            ('bidtoaskPercent', 2, 11, 3, 1, 6, 1, 12, "center", 1, "nsew", "BID2ASK %"), # Calculated diffrence between bid and ask price
+            ('hitoloPercent', 2, 14, 3, 1, 6, 1, 12, "center", 1, "nsew", "HI2LO %"), # Calculated diffrence between high and low price
 #3 Row
-            ('exchange', 3, 7, 4, 1, 4, 1, 10, "center", 1, "nsew", "EXCHANGE"), # Exchange name
+            ('exchange', 3, 7, 4, 1, 4, 1, 12, "center", 1, "nsew", "EXCHANGE"), # Exchange name
             ('bestAsk', 3, 11, 3, 1, 8, 1, 12, "e", 1, "nsew", "00000.00"),
             ('lowPrice', 3, 14, 3, 1, 8, 1, 12, "e", 1, "nsew", "00000.00"),
 #4 Row
             ('volume', 4, 0, 7, 1, 20, 1, 14, "e", 0, "nsew", "00000.00 VOL"),
             ('updatedAt', 4, 7, 4, 1, 8, 1, 12, "center", 1, "nsew", "--:--:--"),
-            ('askText', 4, 11, 3, 1, 6, 1, 12, "w", 1, "nsew", " A S K "), # Text
-            ('loText', 4, 14, 3, 1, 6, 1, 12, "w", 1, "nsew", " L O "), # Text
+            ('askText', 4, 11, 3, 1, 6, 1, 12, "w", 1, "nsew", " ASK "), # Text
+            ('loText', 4, 14, 3, 1, 6, 1, 12, "w", 1, "nsew", " LO "), # Text
         ]:
         color = "#00C186" if key in ['bidText', 'hiText', 'bestBid', 'highPrice'] else "#FF5761" if key in ['bestAsk', 'lowPrice', 'askText', 'loText'] else "#fdf4dc"
         canvas = Canvas(widget_root, height=height, bg=transparent_color)  # height in pixels
@@ -117,13 +117,24 @@ def animated_update(label, new_value, color=None):
 def update_widget(formatted_data):
     animated_update(labels['symbol'], formatted_data['symbol'])
     animated_update(labels['lastPrice'], formatted_data['lastPrice'])
-    labels['exchange'].config(text=formatted_data['exchange'])
+    labels['exchange'].config(text=formatted_data['exchange'].upper())
     labels['bestBid'].config(text=formatted_data['bestBid'])
     labels['bestAsk'].config(text=formatted_data['bestAsk'])
     animated_update(labels['volume'], formatted_data['volume'])
     labels['highPrice'].config(text=formatted_data['highPrice'])
     labels['lowPrice'].config(text=formatted_data['lowPrice'])
     labels['updatedAt'].config(text=formatted_data['updatedAt'])
+    bestBid = float(formatted_data['bestBid'])
+    bestAsk = float(formatted_data['bestAsk'])
+    if bestBid and bestAsk:
+        percent_diff = ((bestAsk - bestBid) / bestBid) * 100
+        labels['bidtoaskPercent'].config(text=f"{percent_diff:.3f}%")
+    highPrice = float(formatted_data['highPrice'])
+    lowPrice = float(formatted_data['lowPrice'])
+    
+    if highPrice and lowPrice:
+        percent_diff_hi_lo = ((highPrice - lowPrice) / lowPrice) * 100
+        labels['hitoloPercent'].config(text=f"{percent_diff_hi_lo:.2f}%")
 
 # Function to load the configuration
 def load_config():
