@@ -24,7 +24,7 @@ def fetch_data(exchange, symbol):
 
 def update_values():
     global update_running
-    load_config()
+    load_config() # Load the configuration
     print("U- Updating Started")
     while update_running:
         for exchange, symbol in zip(exchanges, symbols):
@@ -53,7 +53,7 @@ def update_values():
                 print(f"U- Waiting... {i+1}/{interval} seconds.")
                 time.sleep(1)
 
-
+# Thread control functions
 def start_update_thread():
     global update_thread, update_running
     update_running = True
@@ -69,5 +69,3 @@ def stop_update_thread():
         update_thread.join()
         update_thread = None
         print("U- TH Stoped")
-
-        

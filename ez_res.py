@@ -14,27 +14,25 @@ def format_price(price):
             return integer_part
     return price_str
 
-#exeption 'volume', time and other this require rebuild but it is working
+# Function to format data later inserted into widget.
 def format_market_data(exchange, symbol):
     market_data = ez_api.get_market(exchange, symbol)
 
     if market_data:
         if exchange == 'okx':
-            volume = market_data['volCcy24h']
-            print("U- Okx formating .")
-            if isinstance(volume, str):
-                volume = float(volume)
+            volumex = market_data['volCcy24h']
+            if isinstance(volumex, str):
+                volumex = float(volumex)
 
-            if volume >= 10**9:
-                volume = "{:.1f} B".format(volume / 10**9)
-            elif volume >= 10**6:
-                volume = "{:.1f} M".format(volume / 10**6)
-            elif volume >= 1000:
-                volume = "{:.1f} K".format(volume / 1000)
+            if volumex >= 10**9:
+                volumex = "{:.1f} B".format(volumex / 10**9)
+            elif volumex >= 10**6:
+                volumex = "{:.1f} M".format(volumex / 10**6)
+            elif volumex >= 1000:
+                volumex = "{:.1f} K".format(volumex / 1000)
             else:
-                volume = str(volume)
+                volumex = str(volumex)
         else:
-            print("U- Volume formating .")
             volume = market_data['volume']
             if isinstance(volume, str):
                 volume = float(volume)
@@ -48,11 +46,10 @@ def format_market_data(exchange, symbol):
             else:
                 volume = str(volume)
 
-
         if exchange == 'binance':
-            updated_at = datetime.fromtimestamp(market_data['closeTime'] / 1000).strftime('%H:%M:%S')
+            closetime_time = datetime.fromtimestamp(market_data['closeTime'] / 1000).strftime('%H:%M:%S')
             formatted_data = {
-                'updatedAt': updated_at,
+                'updatedAt': closetime_time,
                 'symbol': market_data['symbol'],
                 'lastPrice': format_price(market_data['lastPrice']),
                 'bestBid': format_price(market_data['bidPrice']),
@@ -61,13 +58,13 @@ def format_market_data(exchange, symbol):
                 'lowPrice': format_price(market_data['lowPrice']),
                 'volume': volume + " VOL  ",
             }
+            print(formatted_data)
             return formatted_data
 
-
         elif exchange == 'xeggex':
-            updated_at = datetime.fromtimestamp(market_data['updatedAt'] / 1000).strftime('%H:%M:%S')
+            updated_at_time = datetime.fromtimestamp(market_data['updatedAt'] / 1000).strftime('%H:%M:%S')
             formatted_data = {
-                'updatedAt': updated_at,
+                'updatedAt': updated_at_time,
                 'symbol': market_data['symbol'],
                 'lastPrice': format_price(market_data['lastPrice']),
                 'bestBid': format_price(market_data['bestBid']),
@@ -76,26 +73,29 @@ def format_market_data(exchange, symbol):
                 'lowPrice': format_price(market_data['lowPrice']),
                 'volume': volume + " VOL  ",
             }
+            print(formatted_data)
             return formatted_data
         
-        
         elif exchange == 'okx':
+            ts_time = datetime.fromtimestamp(int(market_data['ts']) / 1000).strftime('%H:%M:%S')
             formatted_data = {
-                'updatedAt': market_data['ts'],
+                'updatedAt': ts_time,
                 'symbol': market_data['instId'],
                 'lastPrice': format_price(market_data['last']),
                 'bestBid': format_price(market_data['bidPx']),
                 'bestAsk': format_price(market_data['askPx']),
                 'highPrice': format_price(market_data['high24h']),
                 'lowPrice': format_price(market_data['low24h']),
-                'volume': volume + " VOL  ",
+                'volume': volumex + " VOL  ",
             }
+            print(formatted_data)
             return formatted_data
 
-
         elif exchange == 'coinbase':
+            fulltime = (market_data['time'])
+            time_time = fulltime[11:19]
             formatted_data = {
-                'updatedAt': market_data['time'],
+                'updatedAt': time_time,
                 'symbol': market_data['display_name'],
                 'lastPrice': format_price(market_data['price']),
                 'bestBid': format_price(market_data['bid']),
@@ -106,13 +106,6 @@ def format_market_data(exchange, symbol):
             }
             return formatted_data
 
-
         else:
             print(f"R- Failed to fetch market data for symbol {symbol}")
             return None
-
-#format_market_data('binance', 'BTCUSDT')
-#format_market_data('xeggex', 'BTC_USDT')
-#format_market_data('okx', 'BTC-USDT')
-#format_market_data('coinbase', 'BTC-USDT')
-

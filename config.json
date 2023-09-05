@@ -1,1 +1,1 @@
-{"exchanges": ["xeggex", "binance", "okx", "coinbase", "xeggex"], "symbols": ["BTC_USDT", "BTCUSDT", "BTC-USDT", "XLM_USDT", "PAPRY/USDT"], "interval": 7}
+{"exchanges": ["binance", "binance", "binance", "binance", "coinbase", "coinbase", "coinbase", "okx", "okx", "okx", "xeggex", "xeggex", "xeggex"], "symbols": ["BTCUSDT", "BTCTRY", "ETHUSDT", "TRXUSDT", "BTC-USDT", "ETH-USDT", "ETH-BTC", "BTC-USDT", "ETH-USDT", "TRX-USDT", "PAPRY/USDT", "LTC/USDT", "BTC/USDT"], "interval": 6, "always_on_top": true}
